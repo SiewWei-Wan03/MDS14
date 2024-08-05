@@ -1,0 +1,128 @@
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
+import '../App.css';
+
+const ReassessingPage = () => {
+  const [drugs, setDrugs] = useState([
+    { name: 'A-443654', dosage: 5 },
+    { name: 'AICA Ribonucleotide', dosage: 2 }
+  ]);
+  const [showWarning, setShowWarning] = useState(true);
+  const navigate = useNavigate();
+
+  const removeDrug = (index) => {
+    setDrugs(drugs.filter((_, i) => i !== index));
+  };
+
+  const addDrug = () => {
+    setDrugs([...drugs, { name: '', dosage: 1 }]); // Default dosage set to 1
+  };
+
+  const handleDrugChange = (index, field, value) => {
+    const newDrugs = drugs.map((drug, i) =>
+      i === index ? { ...drug, [field]: value } : drug
+    );
+    setDrugs(newDrugs);
+  };
+
+  const handleSave = () => {
+    navigate('/patient-info');
+  };
+
+  return (
+    <div className="flex">
+      {/* Sidebar */}
+      <div className="w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
+        <div className="mb-12">
+          <img src="https://placehold.co/50x50" alt="MDS logo" />
+        </div>
+        <nav className="flex flex-col gap-8 text-green-200">
+          <Link to="/">
+            <FaUser className="text-2xl" />
+          </Link>
+          <FaEnvelope className="text-2xl" />
+          <FaSignOutAlt className="text-2xl" />
+        </nav>
+      </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
+        <div className="w-full max-w-4xl p-8">
+          <h1 className="text-3xl text-green-900 font-semibold mb-6">Reassessing recommendations</h1>
+          <table className="w-full mb-6 border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left p-2 bg-green-900 text-white border border-green-900">Drugs</th>
+                <th className="text-left p-2 bg-green-900 text-white border border-green-900">Dosage</th>
+                <th className="p-2 bg-green-900 text-white border border-green-900" style={{ display: 'none' }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {drugs.map((drug, index) => (
+                <tr key={index}>
+                  <td className="p-2 border border-green-900">
+                    <input
+                      type="text"
+                      value={drug.name}
+                      onChange={(e) => handleDrugChange(index, 'name', e.target.value)}
+                      className="w-full p-1"
+                    />
+                  </td>
+                  <td className="p-2 border border-green-900">
+                    <input
+                      type="number"
+                      min="1"
+                      value={drug.dosage}
+                      onChange={(e) => handleDrugChange(index, 'dosage', Math.max(1, e.target.value))}
+                      className="w-full p-1"
+                    />
+                  </td>
+                  <td className="p-2 border border-green-900">
+                    <button
+                      onClick={() => removeDrug(index)}
+                      className="px-2 py-1 border rounded text-green-900 bg-white"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            onClick={addDrug}
+            className="px-6 py-2 mb-4 border rounded text-green-900 bg-white"
+          >
+            Add
+          </button>
+          {showWarning && (
+            <div className="flex items-center mb-4 bg-green-500 p-2 rounded">
+              <span className="flex-grow text-white">Excessive Drug A-443654 might not be able to be absorbed by patient due to kidney failure!</span>
+              <button
+                onClick={() => setShowWarning(false)}
+                className="px-6 py-2 border rounded text-green-900 bg-white"
+              >
+                Ignore
+              </button>
+            </div>
+          )}
+          <div className="mb-6">
+            <h2 className="text-2xl text-green-900 font-semibold mb-4">Additional lifestyle or dietary advice:</h2>
+            <ul className="list-disc list-inside text-green-900">
+              <li>Drink 8-10 glasses of water daily and follow a high-fiber, low-sugar diet with plenty of whole grains, vegetables, and fruits to manage blood glucose levels and detoxification.</li>
+              <li>Engage in 30 minutes of moderate aerobic exercise like brisk walking most days, plus strength training twice weekly, adjusting intensity if you experience fatigue or muscle pain.</li>
+            </ul>
+          </div>
+          <button
+            onClick={handleSave}
+            className="px-6 py-2 border rounded text-green-900 bg-white"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ReassessingPage;
