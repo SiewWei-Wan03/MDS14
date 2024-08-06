@@ -90,18 +90,15 @@ const AddConditionsPage = () => {
 
   const handleOk = async () => {
     const { cardiovascularDisease, kidneyFailure, diabetes, asthma, other } = conditions;
-  
+    
     if (!cardiovascularDisease && !kidneyFailure && !diabetes && !asthma && !other) {
       setError('Please select at least one condition or enter a value in the "Other" box.');
     } else {
       try {
-        const patientID = patientData.id;
-        console.log(patientID);
-        const patientRef = ref(database, `patients/${patientID}/conditions`);
-  
-        const existingConditionsSnapshot = await get(patientRef);
+        const patientRef = ref(database, `patients/${patientData.ID}`);
+        const existingConditionsSnapshot = await get(child(patientRef, 'conditions'));
         const existingConditions = existingConditionsSnapshot.val() || [];
-  
+
         const newConditions = [
           ...(cardiovascularDisease && !existingConditions.includes('Cardiovascular disease')
             ? ['Cardiovascular disease']
@@ -113,11 +110,11 @@ const AddConditionsPage = () => {
           ...(asthma && !existingConditions.includes('Asthma') ? ['Asthma'] : []),
           ...(other && !existingConditions.includes(other) ? [other] : []),
         ];
-  
+
         const updatedConditions = [...existingConditions, ...newConditions];
-  
-        await set(patientRef, updatedConditions);
-  
+
+        await update(patientRef, { conditions: updatedConditions });
+
         navigate('/recommendations');
       } catch (error) {
         console.error('Error saving conditions:', error);
@@ -125,6 +122,7 @@ const AddConditionsPage = () => {
       }
     }
   };
+
 
   return (
     <div className="flex">
