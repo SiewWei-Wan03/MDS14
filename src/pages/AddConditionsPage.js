@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
-import { database } from '../firebase';
-import { ref, get } from 'firebase/database';
+import { ref, set, get, child, update } from 'firebase/database';
+import { database } from '../firebase'; 
 import '../App.css';
 
 const AddConditionsPage = () => {
@@ -10,31 +10,74 @@ const AddConditionsPage = () => {
   const location = useLocation();
   const patientData = location.state?.patientData || {};
   const [conditions, setConditions] = useState({
-    heartDisease: false,
+    cardiovascularDisease: false,
     kidneyFailure: false,
     diabetes: false,
-    allergy: false,
     asthma: false,
-    other: ''
+    other: '',
   });
+  const [disabledConditions, setDisabledConditions] = useState({
+    cardiovascularDisease: false,
+    kidneyFailure: false,
+    diabetes: false,
+    asthma: false,
+  });
+  const [otherConditions, setOtherConditions] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (patientData.conditions) {
-      const patientConditions = patientData.conditions || {};
-      setConditions({
-        heartDisease: patientConditions.heartDisease || false,
-        kidneyFailure: patientConditions.kidneyFailure || false,
-        diabetes: patientConditions.diabetes || false,
-        allergy: patientConditions.allergy || false,
-        asthma: patientConditions.asthma || false,
-        other: patientConditions.other || ''
+      const patientConditions = patientData.conditions || [];
+      const additionalConditions = [];
+      const updatedConditions = {
+        cardiovascularDisease: false,
+        kidneyFailure: false,
+        diabetes: false,
+        asthma: false,
+        other: '',
+      };
+      const updatedDisabledConditions = {
+        cardiovascularDisease: false,
+        kidneyFailure: false,
+        diabetes: false,
+        asthma: false,
+      };
+
+      patientConditions.forEach((condition) => {
+        switch (condition) {
+          case 'Cardiovascular disease':
+            updatedConditions.cardiovascularDisease = true;
+            updatedDisabledConditions.cardiovascularDisease = true;
+            break;
+          case 'Kidney failure':
+            updatedConditions.kidneyFailure = true;
+            updatedDisabledConditions.kidneyFailure = true;
+            break;
+          case 'Diabetes':
+            updatedConditions.diabetes = true;
+            updatedDisabledConditions.diabetes = true;
+            break;
+          case 'Asthma':
+            updatedConditions.asthma = true;
+            updatedDisabledConditions.asthma = true;
+            break;
+          default:
+            additionalConditions.push(condition);
+        }
       });
+
+      setConditions(updatedConditions);
+      setDisabledConditions(updatedDisabledConditions);
+      setOtherConditions(
+        additionalConditions.filter((c) => c !== 'Breast cancer').join(', ')
+      );
     }
   }, [patientData]);
 
   const handleCheckboxChange = (condition) => {
-    setConditions({ ...conditions, [condition]: !conditions[condition] });
+    if (!disabledConditions[condition]) {
+      setConditions({ ...conditions, [condition]: !conditions[condition] });
+    }
   };
 
   const handleInputChange = (e) => {
@@ -45,12 +88,41 @@ const AddConditionsPage = () => {
     navigate('/patient-info');
   };
 
-  const handleOk = () => {
-    const { heartDisease, kidneyFailure, diabetes, allergy, asthma, other } = conditions;
-    if (!heartDisease && !kidneyFailure && !diabetes && !allergy && !asthma && !other) {
+  const handleOk = async () => {
+    const { cardiovascularDisease, kidneyFailure, diabetes, asthma, other } = conditions;
+  
+    if (!cardiovascularDisease && !kidneyFailure && !diabetes && !asthma && !other) {
       setError('Please select at least one condition or enter a value in the "Other" box.');
     } else {
-      navigate('/recommendations');
+      try {
+        const patientID = patientData.id;
+        console.log(patientID);
+        const patientRef = ref(database, `patients/${patientID}/conditions`);
+  
+        const existingConditionsSnapshot = await get(patientRef);
+        const existingConditions = existingConditionsSnapshot.val() || [];
+  
+        const newConditions = [
+          ...(cardiovascularDisease && !existingConditions.includes('Cardiovascular disease')
+            ? ['Cardiovascular disease']
+            : []),
+          ...(kidneyFailure && !existingConditions.includes('Kidney failure')
+            ? ['Kidney failure']
+            : []),
+          ...(diabetes && !existingConditions.includes('Diabetes') ? ['Diabetes'] : []),
+          ...(asthma && !existingConditions.includes('Asthma') ? ['Asthma'] : []),
+          ...(other && !existingConditions.includes(other) ? [other] : []),
+        ];
+  
+        const updatedConditions = [...existingConditions, ...newConditions];
+  
+        await set(patientRef, updatedConditions);
+  
+        navigate('/recommendations');
+      } catch (error) {
+        console.error('Error saving conditions:', error);
+        setError('Failed to save conditions. Please try again.');
+      }
     }
   };
 
@@ -72,9 +144,12 @@ const AddConditionsPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
         <div className="w-full max-w-4xl p-8">
-          <h1 className="text-3xl text-green-900 font-semibold mb-6">Additional Medical Conditions</h1>
+          <h1 className="text-3xl text-green-900 font-semibold mb-6">
+            Additional Medical Conditions
+          </h1>
           <p className="text-xl text-green-900 mb-4">
-            Please select any additional conditions the patient has, by ticking the appropriate checkbox(es):
+            Please select any additional conditions the patient has, by ticking the appropriate
+            checkbox(es):
           </p>
           {error && <p className="text-red-500 mb-4">{error}</p>}
           <div className="flex flex-col">
@@ -82,11 +157,19 @@ const AddConditionsPage = () => {
               <input
                 type="checkbox"
                 className="mr-2"
-                checked={conditions.heartDisease}
-                onChange={() => handleCheckboxChange('heartDisease')}
-                disabled
+                checked={conditions.cardiovascularDisease}
+                onChange={() => handleCheckboxChange('cardiovascularDisease')}
+                disabled={disabledConditions.cardiovascularDisease}
               />
-              <span className="text-green-900 line-through">Heart Disease</span>
+              <span
+                className={
+                  disabledConditions.cardiovascularDisease
+                    ? 'text-green-900 line-through'
+                    : 'text-green-900'
+                }
+              >
+                Cardiovascular Disease
+              </span>
             </label>
             <label className="flex items-center mb-2">
               <input
@@ -94,8 +177,17 @@ const AddConditionsPage = () => {
                 className="mr-2"
                 checked={conditions.kidneyFailure}
                 onChange={() => handleCheckboxChange('kidneyFailure')}
+                disabled={disabledConditions.kidneyFailure}
               />
-              <span className="text-green-900">Kidney Failure</span>
+              <span
+                className={
+                  disabledConditions.kidneyFailure
+                    ? 'text-green-900 line-through'
+                    : 'text-green-900'
+                }
+              >
+                Kidney Failure
+              </span>
             </label>
             <label className="flex items-center mb-2">
               <input
@@ -103,18 +195,17 @@ const AddConditionsPage = () => {
                 className="mr-2"
                 checked={conditions.diabetes}
                 onChange={() => handleCheckboxChange('diabetes')}
+                disabled={disabledConditions.diabetes}
               />
-              <span className="text-green-900">Diabetes</span>
-            </label>
-            <label className="flex items-center mb-2">
-              <input
-                type="checkbox"
-                className="mr-2"
-                checked={conditions.allergy}
-                onChange={() => handleCheckboxChange('allergy')}
-                disabled
-              />
-              <span className="text-green-900 line-through">Allergy</span>
+              <span
+                className={
+                  disabledConditions.diabetes
+                    ? 'text-green-900 line-through'
+                    : 'text-green-900'
+                }
+              >
+                Diabetes
+              </span>
             </label>
             <label className="flex items-center mb-2">
               <input
@@ -122,8 +213,15 @@ const AddConditionsPage = () => {
                 className="mr-2"
                 checked={conditions.asthma}
                 onChange={() => handleCheckboxChange('asthma')}
+                disabled={disabledConditions.asthma}
               />
-              <span className="text-green-900">Asthma</span>
+              <span
+                className={
+                  disabledConditions.asthma ? 'text-green-900 line-through' : 'text-green-900'
+                }
+              >
+                Asthma
+              </span>
             </label>
             <label className="flex items-center mb-2">
               <input
@@ -141,9 +239,19 @@ const AddConditionsPage = () => {
               />
             </label>
           </div>
+          {otherConditions && (
+            <p className="text-sm text-green-900 mt-4">Other conditions: {otherConditions}</p>
+          )}
           <div className="flex justify-end mt-4">
-            <button onClick={handleCancel} className="mr-4 px-6 py-2 border rounded text-green-900">Cancel</button>
-            <button onClick={handleOk} className="px-6 py-2 bg-green-900 text-white rounded">OK</button>
+            <button
+              onClick={handleCancel}
+              className="mr-4 px-6 py-2 border rounded text-green-900"
+            >
+              Cancel
+            </button>
+            <button onClick={handleOk} className="px-6 py-2 bg-green-900 text-white rounded">
+              OK
+            </button>
           </div>
         </div>
       </div>
