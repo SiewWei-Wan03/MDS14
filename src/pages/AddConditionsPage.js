@@ -90,38 +90,49 @@ const AddConditionsPage = () => {
 
   const handleOk = async () => {
     const { cardiovascularDisease, kidneyFailure, diabetes, asthma, other } = conditions;
-    
+  
+    // Check if no condition is selected and return early with an error message.
     if (!cardiovascularDisease && !kidneyFailure && !diabetes && !asthma && !other) {
       setError('Please select at least one condition or enter a value in the "Other" box.');
-    } else {
-      try {
-        const patientRef = ref(database, `patients/${patientData.ID}`);
-        const existingConditionsSnapshot = await get(child(patientRef, 'conditions'));
-        const existingConditions = existingConditionsSnapshot.val() || [];
-
-        const newConditions = [
-          ...(cardiovascularDisease && !existingConditions.includes('Cardiovascular disease')
-            ? ['Cardiovascular disease']
-            : []),
-          ...(kidneyFailure && !existingConditions.includes('Kidney failure')
-            ? ['Kidney failure']
-            : []),
-          ...(diabetes && !existingConditions.includes('Diabetes') ? ['Diabetes'] : []),
-          ...(asthma && !existingConditions.includes('Asthma') ? ['Asthma'] : []),
-          ...(other && !existingConditions.includes(other) ? [other] : []),
-        ];
-
-        const updatedConditions = [...existingConditions, ...newConditions];
-
-        await update(patientRef, { conditions: updatedConditions });
-
-        navigate('/recommendations');
-      } catch (error) {
-        console.error('Error saving conditions:', error);
-        setError('Failed to save conditions. Please try again.');
-      }
+      return;
+    }
+  
+    try {
+      const patientRef = ref(database, `patients/${patientData.ID}`);
+      const existingConditionsSnapshot = await get(child(patientRef, 'conditions'));
+      const existingConditions = existingConditionsSnapshot.val() || [];
+  
+      const newConditions = [
+        ...(cardiovascularDisease && !existingConditions.includes('Cardiovascular disease')
+          ? ['Cardiovascular disease']
+          : []),
+        ...(kidneyFailure && !existingConditions.includes('Kidney failure')
+          ? ['Kidney failure']
+          : []),
+        ...(diabetes && !existingConditions.includes('Diabetes') ? ['Diabetes'] : []),
+        ...(asthma && !existingConditions.includes('Asthma') ? ['Asthma'] : []),
+        ...(other && other.trim() !== "" && !existingConditions.includes(other.trim())
+          ? [other.trim()]
+          : []),
+      ];
+  
+      console.log(newConditions);
+  
+      const updatedConditions = [...existingConditions, ...newConditions].filter(
+        (condition) => condition !== undefined && condition !== null
+      );
+  
+      console.log(updatedConditions);
+  
+      await update(patientRef, { conditions: updatedConditions });
+  
+      navigate('/recommendations');
+    } catch (error) {
+      console.error('Error saving conditions:', error);
+      setError('Failed to save conditions. Please try again.');
     }
   };
+  
 
 
   return (
