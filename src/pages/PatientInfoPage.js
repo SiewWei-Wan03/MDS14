@@ -50,7 +50,7 @@ const PatientInfoPage = () => {
                 </div>
                 <p>Date of birth: <span className="font-semibold">{patientData.DOB}</span></p>
                 <p>Age: <span className="font-semibold">{patientData.age}</span></p>
-                <p>Patient ID: <span className="font-semibold">{patientData.id}</span></p>
+                <p>Patient ID: <span className="font-semibold">{patientData.ID}</span></p>
               </div>
               <div className="w-1/3">
                 <h2 className="text-green-900 font-semibold mb-4">Medical Conditions:</h2>
