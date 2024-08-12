@@ -85,7 +85,7 @@ const AddConditionsPage = () => {
   };
 
   const handleCancel = () => {
-    navigate('/patient-info');
+    navigate('/patient-info', { state: { patientData } });
   };
 
   const handleOk = async () => {
@@ -126,14 +126,12 @@ const AddConditionsPage = () => {
   
       await update(patientRef, { conditions: updatedConditions });
   
-      navigate('/recommendations');
+      navigate('/recommendations', { state: { patientData } } );
     } catch (error) {
       console.error('Error saving conditions:', error);
       setError('Failed to save conditions. Please try again.');
     }
   };
-  
-
 
   return (
     <div className="flex">
