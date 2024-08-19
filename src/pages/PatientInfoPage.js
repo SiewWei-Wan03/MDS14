@@ -1,21 +1,63 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaSignOutAlt, FaPlusCircle } from 'react-icons/fa';
+import { ref, get, child } from 'firebase/database';
+import { database } from '../firebase'; // Ensure that this is the correct path to your Firebase instance
 import '../App.css';
 
 const PatientInfoPage = () => {
+  const [patientData, setPatientData] = useState(null); // State to store patient data
+  const [loading, setLoading] = useState(true); // State to handle loading state
+  const [error, setError] = useState(null); // State to handle any errors
   const navigate = useNavigate();
   const location = useLocation();
-  const patientData = location.state?.patientData || {};
+  const patientID = location.state?.patientData?.ID; // Get the patient ID from location state
+
+  useEffect(() => {
+    const fetchPatientData = async () => {
+      if (patientID) {
+        try {
+          const patientRef = ref(database, `patients/${patientID}`);
+          const snapshot = await get(child(patientRef, '/'));
+  
+          if (snapshot.exists()) {
+            const data = snapshot.val();
+            console.log('Fetched patient data:', data);  // Add this line
+            setPatientData(data); // Set the fetched data to state
+          } else {
+            setError('No data available for this patient.');
+          }
+        } catch (error) {
+          console.error('Error fetching patient data:', error);
+          setError('Failed to fetch patient data. Please try again.');
+        } finally {
+          setLoading(false); // Set loading to false once the data is fetched
+        }
+      } else {
+        setLoading(false);
+        setError('No patient ID provided.');
+      }
+    };
+  
+    fetchPatientData();
+  }, [patientID]);
+  
+  const handleAddConditions = () => {
+    navigate('/add-conditions', { state: { patientData } });
+  };
+
+  if (loading) {
+    return <div>Loading...</div>; // Display a loading state
+  }
+
+  if (error) {
+    return <div>{error}</div>; // Display any errors
+  }
 
   if (!patientData) {
     return <div>No patient data available</div>;
   }
 
-  const handleAddConditions = () => {
-    navigate('/add-conditions', { state: { patientData } });
-  };
-  
   return (
     <div className="flex">
       {/* Sidebar */}
@@ -86,15 +128,10 @@ const PatientInfoPage = () => {
                 ))}
               </tbody>
             </table>
-            <button onClick={() => { handleAddConditions();}}
-                    className="flex items-center mt-4 text-green-900 bg-transparent border-none cursor-pointer">
-            <FaPlusCircle className="mr-2" />
-              Add new prescription
-            </button>
-            {/* <Link to="/add-conditions" className="flex items-center mt-4 text-green-900">
+            <button onClick={handleAddConditions} className="flex items-center mt-4 text-green-900 bg-transparent border-none cursor-pointer">
               <FaPlusCircle className="mr-2" />
               Add new prescription
-            </Link> */}
+            </button>
           </div>
         </div>
       </div>
