@@ -13,38 +13,32 @@ const RecommendationsPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const patientData = location.state?.patientData || {};
 
   useEffect(() => {
-    // Retrieve patient data from the location state
-    const patientData = location.state?.patientData || {};
     console.log(patientData);
 
-    // Fetch new prescriptions and advices from Firebase
     const fetchPrescriptionsAndAdvices = async () => {
       try {
-        // Create a reference to the specific patient's new_prescriptions and advices
         const patientRef = ref(database, `patients/${patientData.ID}`);
-
-        // Fetch the prescriptions data at this reference
-        const nprescriptionsSnapshot = await get(child(patientRef, 'new_prescriptions'));
+    
+        const [nprescriptionsSnapshot, advicesSnapshot] = await Promise.all([
+          get(child(patientRef, 'new_prescriptions')),
+          get(child(patientRef, 'new_advices'))
+        ]);
+    
         const nprescriptions = nprescriptionsSnapshot.val() || [];
         setPrescriptions(nprescriptions);
         console.log(nprescriptions);
-
-        // Fetch the advices data at this reference
-        const advicesSnapshot = await get(child(patientRef, 'new_advices'));
+    
         const advicesData = advicesSnapshot.val() || '';
-        console.log(advicesData);
-
-        // Split the advices into sentences by full stops
         const advicesList = advicesData.split('.').filter(sentence => sentence.trim() !== '').map(sentence => sentence.trim() + '.');
         setAdvices(advicesList);
         console.log(advicesList);
-
-
+    
       } catch (error) {
-        console.error('Error fetching data:', error); // Log any errors
-        setError('Failed to fetch data. Please try again.'); // Set an error message
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data. Please try again.');
       }
     };
 
@@ -57,7 +51,7 @@ const RecommendationsPage = () => {
 
   const handlePopupOk = () => {
     setShowPopup(false);
-    navigate('/reassessing');
+    navigate('/reassessing', { state: { patientData } });
   };
 
   const handleAccept = async () => {
@@ -75,8 +69,20 @@ const RecommendationsPage = () => {
       const existingPrescriptionsSnapshot = await get(child(patientRef, 'prescriptions'));
       const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
   
+      // Get the current date and time
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('T')[0];
+      const formattedTime = currentDate.toTimeString().split(' ')[0].slice(0, 5);
+  
+      // Add current date and time to each new prescription
+      const updatedNprescriptions = nprescriptions.map(prescription => ({
+        ...prescription,
+        date: formattedDate,
+        time: formattedTime,
+      }));
+  
       // Combine new prescriptions with existing ones
-      const updatedPrescriptions = [...(existingPrescriptions || []), ...(nprescriptions || [])];
+      const updatedPrescriptions = [...(existingPrescriptions || []), ...(updatedNprescriptions || [])];
   
       // Update the combined prescriptions list to the 'prescriptions' location
       await update(patientRef, { prescriptions: updatedPrescriptions });
