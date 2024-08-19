@@ -1,22 +1,52 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
+import { ref, update, get, child } from 'firebase/database'; // Import Firebase functions
+import { database } from '../firebase'; // Import Firebase instance
 import '../App.css';
 
 const ReassessingPage = () => {
-  const [drugs, setDrugs] = useState([
-    { name: 'A-443654', dosage: 5 },
-    { name: 'AICA Ribonucleotide', dosage: 2 }
-  ]);
+  const [drugs, setDrugs] = useState([]);
+  const [advice, setAdvice] = useState([]); // Initialize as an array
   const [showWarning, setShowWarning] = useState(true);
+  const [error, setError] = useState(null); // Add error state
   const navigate = useNavigate();
+  const location = useLocation(); // Use useLocation hook
+  const patientData = location.state?.patientData || {}; // Get patient data from location state
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const patientRef = ref(database, `patients/${patientData.ID}`);
+        
+        // Fetch new_prescriptions and new_advices from Firebase
+        const [newPrescriptionsSnapshot, newAdvicesSnapshot] = await Promise.all([
+          get(child(patientRef, 'new_prescriptions')),
+          get(child(patientRef, 'new_advices'))
+        ]);
+
+        const newPrescriptions = newPrescriptionsSnapshot.val() || [];
+        const newAdvices = newAdvicesSnapshot.val() || '';
+
+        setDrugs(newPrescriptions);
+
+        // Split advice into an array of sentences or display as a single block
+        setAdvice(newAdvices.split('.').filter(advice => advice.trim() !== ''));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError('Failed to fetch data. Please try again.');
+      }
+    };
+
+    fetchData();
+  }, [patientData.ID]);
 
   const removeDrug = (index) => {
     setDrugs(drugs.filter((_, i) => i !== index));
   };
 
   const addDrug = () => {
-    setDrugs([...drugs, { name: '', dosage: 1 }]); // Default dosage set to 1
+    setDrugs([...drugs, { drug: '', dosage: 1 }]); // Default dosage set to 1
   };
 
   const handleDrugChange = (index, field, value) => {
@@ -26,9 +56,45 @@ const ReassessingPage = () => {
     setDrugs(newDrugs);
   };
 
-  const handleSave = () => {
-    navigate('/patient-info');
-  };
+  const handleSave = async () => {
+    try {
+      // Create a reference to the specific patient's data in Firebase
+      const patientRef = ref(database, `patients/${patientData.ID}`);
+  
+      // Fetch existing prescriptions
+      const existingPrescriptionsSnapshot = await get(child(patientRef, 'prescriptions'));
+      const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
+  
+      // Get the current date and time
+      const currentDate = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
+      const currentTime = new Date().toTimeString().split(' ')[0]; // hh:mm:ss
+  
+      // Attach date and time to each drug
+      const reassessedDrugs = drugs.map(drug => ({
+        ...drug,
+        date: currentDate,
+        time: currentTime,
+      }));
+  
+      // Combine reassessed drugs with existing prescriptions
+      const updatedPrescriptions = [...existingPrescriptions, ...reassessedDrugs];
+  
+      // Update the combined prescriptions list to the 'prescriptions' location
+      await update(patientRef, { prescriptions: updatedPrescriptions });
+  
+      // Update new_prescriptions and new_advices to null after saving them
+      await update(patientRef, {
+        new_prescriptions: null,
+        new_advices: null
+      });
+  
+      // Navigate to the patient-info page after saving
+      navigate('/patient-info', { state: { patientData } });
+    } catch (error) {
+      console.error('Error updating data:', error);
+      setError('Failed to update data. Please try again.');
+    }
+  };  
 
   return (
     <div className="flex">
@@ -54,7 +120,7 @@ const ReassessingPage = () => {
               <tr>
                 <th className="text-left p-2 bg-green-900 text-white border border-green-900">Drugs</th>
                 <th className="text-left p-2 bg-green-900 text-white border border-green-900">Dosage</th>
-                <th className="p-2 bg-green-900 text-white border border-green-900" style={{ display: 'none' }}>Actions</th>
+                <th className="p-2 bg-green-900 text-white border border-green-900">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -63,8 +129,8 @@ const ReassessingPage = () => {
                   <td className="p-2 border border-green-900">
                     <input
                       type="text"
-                      value={drug.name}
-                      onChange={(e) => handleDrugChange(index, 'name', e.target.value)}
+                      value={drug.drug} // Correct the reference
+                      onChange={(e) => handleDrugChange(index, 'drug', e.target.value)}
                       className="w-full p-1"
                     />
                   </td>
@@ -109,16 +175,18 @@ const ReassessingPage = () => {
           <div className="mb-6">
             <h2 className="text-2xl text-green-900 font-semibold mb-4">Additional lifestyle or dietary advice:</h2>
             <ul className="list-disc list-inside text-green-900">
-              <li>Drink 8-10 glasses of water daily and follow a high-fiber, low-sugar diet with plenty of whole grains, vegetables, and fruits to manage blood glucose levels and detoxification.</li>
-              <li>Engage in 30 minutes of moderate aerobic exercise like brisk walking most days, plus strength training twice weekly, adjusting intensity if you experience fatigue or muscle pain.</li>
+              {advice.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </div>
           <button
             onClick={handleSave}
-            className="px-6 py-2 border rounded text-green-900 bg-white"
+            className="px-8 py-4 mb-4 border rounded text-green-900 bg-white"
           >
             Save
           </button>
+          {error && <div className="text-red-500 mt-4">{error}</div>}
         </div>
       </div>
     </div>
