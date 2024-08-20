@@ -19,19 +19,19 @@ const ReassessingPage = () => {
       try {
         const patientRef = ref(database, `patients/${patientData.ID}`);
         
-        // Fetch new_prescriptions and new_advices from Firebase
-        const [newPrescriptionsSnapshot, newAdvicesSnapshot] = await Promise.all([
-          get(child(patientRef, 'new_prescriptions')),
-          get(child(patientRef, 'new_advices'))
+        // Fetch predicted_prescriptions and predicted_advices from Firebase
+        const [predictedPrescriptionsSnapshot, predictedAdvicesSnapshot] = await Promise.all([
+          get(child(patientRef, 'predicted_prescriptions')),
+          get(child(patientRef, 'predicted_advices'))
         ]);
 
-        const newPrescriptions = newPrescriptionsSnapshot.val() || [];
-        const newAdvices = newAdvicesSnapshot.val() || '';
+        const predictedPrescriptions = predictedPrescriptionsSnapshot.val() || [];
+        const predictedAdvices = predictedAdvicesSnapshot.val() || '';
 
-        setDrugs(newPrescriptions);
+        setDrugs(predictedPrescriptions);
 
         // Split advice into an array of sentences or display as a single block
-        setAdvice(newAdvices.split('.').filter(advice => advice.trim() !== ''));
+        setAdvice(predictedAdvices.split('.').filter(advice => advice.trim() !== ''));
       } catch (error) {
         console.error('Error fetching data:', error);
         setError('Failed to fetch data. Please try again.');
@@ -50,10 +50,10 @@ const ReassessingPage = () => {
   };
 
   const handleDrugChange = (index, field, value) => {
-    const newDrugs = drugs.map((drug, i) =>
+    const predictedDrugs = drugs.map((drug, i) =>
       i === index ? { ...drug, [field]: value } : drug
     );
-    setDrugs(newDrugs);
+    setDrugs(predictedDrugs);
   };
 
   const handleSave = async () => {
@@ -66,14 +66,16 @@ const ReassessingPage = () => {
       const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
   
       // Get the current date and time
-      const currentDate = new Date().toISOString().split('T')[0]; // yyyy-mm-dd
-      const currentTime = new Date().toTimeString().split(' ')[0]; // hh:mm:ss
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split('T')[0]; // yyyy-mm-dd
+      const formattedTime = currentDate.toTimeString().split(' ')[0].slice(0, 5); // HH:MM
+
   
       // Attach date and time to each drug
       const reassessedDrugs = drugs.map(drug => ({
         ...drug,
-        date: currentDate,
-        time: currentTime,
+        date: formattedDate,
+        time: formattedTime,
       }));
   
       // Combine reassessed drugs with existing prescriptions
@@ -82,10 +84,10 @@ const ReassessingPage = () => {
       // Update the combined prescriptions list to the 'prescriptions' location
       await update(patientRef, { prescriptions: updatedPrescriptions });
   
-      // Update new_prescriptions and new_advices to null after saving them
+      // Update predicted_prescriptions and predicted_advices to null after saving them
       await update(patientRef, {
-        new_prescriptions: null,
-        new_advices: null
+        predicted_prescriptions: null,
+        predicted_advices: null
       });
   
       // Navigate to the patient-info page after saving
