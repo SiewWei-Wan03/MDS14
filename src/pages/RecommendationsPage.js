@@ -8,7 +8,7 @@ import Popup from './Popup';
 
 const RecommendationsPage = () => {
   const [showPopup, setShowPopup] = useState(false);
-  const [new_retried_prescriptions, setPrescriptions] = useState([]);
+  const [predicted_retried_prescriptions, setPrescriptions] = useState([]);
   const [advices, setAdvices] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -23,8 +23,8 @@ const RecommendationsPage = () => {
         const patientRef = ref(database, `patients/${patientData.ID}`);
     
         const [nprescriptionsSnapshot, advicesSnapshot] = await Promise.all([
-          get(child(patientRef, 'new_prescriptions')),
-          get(child(patientRef, 'new_advices'))
+          get(child(patientRef, 'predicted_prescriptions')),
+          get(child(patientRef, 'predicted_advices'))
         ]);
     
         const nprescriptions = nprescriptionsSnapshot.val() || [];
@@ -61,8 +61,8 @@ const RecommendationsPage = () => {
       // Create a reference to the specific patient's data
       const patientRef = ref(database, `patients/${patientData.ID}`);
   
-      // Fetch new prescriptions
-      const nprescriptionsSnapshot = await get(child(patientRef, 'new_prescriptions'));
+      // Fetch predicted prescriptions
+      const nprescriptionsSnapshot = await get(child(patientRef, 'predicted_prescriptions'));
       const nprescriptions = nprescriptionsSnapshot.val() || [];
   
       // Fetch existing prescriptions
@@ -74,23 +74,23 @@ const RecommendationsPage = () => {
       const formattedDate = currentDate.toISOString().split('T')[0];
       const formattedTime = currentDate.toTimeString().split(' ')[0].slice(0, 5);
   
-      // Add current date and time to each new prescription
+      // Add current date and time to each predicted prescription
       const updatedNprescriptions = nprescriptions.map(prescription => ({
         ...prescription,
         date: formattedDate,
         time: formattedTime,
       }));
   
-      // Combine new prescriptions with existing ones
+      // Combine predicted prescriptions with existing ones
       const updatedPrescriptions = [...(existingPrescriptions || []), ...(updatedNprescriptions || [])];
   
       // Update the combined prescriptions list to the 'prescriptions' location
       await update(patientRef, { prescriptions: updatedPrescriptions });
   
-      // Update new_prescriptions and new_advices to null
+      // Update predicted_prescriptions and predicted_advices to null
       await update(patientRef, {
-        new_prescriptions: null,
-        new_advices: null
+        predicted_prescriptions: null,
+        predicted_advices: null
       });
   
       // Navigate to the patient-info page
@@ -131,8 +131,8 @@ const RecommendationsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {new_retried_prescriptions.length > 0 ? (
-                new_retried_prescriptions.map((prescription, index) => (
+              {predicted_retried_prescriptions.length > 0 ? (
+                predicted_retried_prescriptions.map((prescription, index) => (
                   <tr key={index}>
                     <td className="p-2 border border-green-900">{prescription.drug}</td>
                     <td className="p-2 border border-green-900">{prescription.dosage}</td>
