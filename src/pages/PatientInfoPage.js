@@ -42,8 +42,8 @@ const PatientInfoPage = () => {
     fetchPatientData();
   }, [patientID]);
   
-  const handleAddConditions = () => {
-    navigate('/add-conditions', { state: { patientData } });
+  const handleAddPrescriptions = () => {
+    navigate('/select-prescriptions', { state: { patientData } });
   };
 
   if (loading) {
@@ -128,7 +128,7 @@ const PatientInfoPage = () => {
                 ))}
               </tbody>
             </table>
-            <button onClick={handleAddConditions} className="flex items-center mt-4 text-green-900 bg-transparent border-none cursor-pointer">
+            <button onClick={handleAddPrescriptions} className="flex items-center mt-4 text-green-900 bg-transparent border-none cursor-pointer">
               <FaPlusCircle className="mr-2" />
               Add new prescription
             </button>
