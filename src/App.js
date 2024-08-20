@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react
 import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import './App.css';
 import PatientInfoPage from './pages/PatientInfoPage';
-import AddConditionsPage from './pages/AddConditionsPage';
 import RecommendationsPage from './pages/RecommendationsPage';
 import ReassessingPage from './pages/ReassessingPage.js';
 import { database } from './firebase.js';
 import { ref, get } from "firebase/database";
+import SelectPrescriptionPage from './pages/SelectPrescriptionPage.js';
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<MainLayout />} />
         <Route path="/patient-info" element={<PatientInfoPage />} />
-        <Route path="/add-conditions" element={<AddConditionsPage />} />
+        <Route path="/select-prescriptions" element={<SelectPrescriptionPage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
         <Route path="/reassessing" element={<ReassessingPage />} />
       </Routes>
