@@ -244,11 +244,13 @@ const SelectPrescriptionPage = () => {
           <img src="https://placehold.co/50x50" alt="MDS logo" />
         </div>
         <nav className="flex flex-col gap-8 text-green-200">
-          <Link to="/">
+        <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
           <FaEnvelope className="text-2xl" />
-          <FaSignOutAlt className="text-2xl" />
+          <Link to="/login">
+            <FaSignOutAlt className="text-2xl" />
+          </Link>
         </nav>
       </div>
       {/* Main Content */}
