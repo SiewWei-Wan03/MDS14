@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# virtual envionments for model training
+venv/
+
 # testing
 /coverage
 
