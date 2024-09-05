@@ -1,9 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';  // Firebase Authentication
-import { ref, get } from 'firebase/database';  // Firebase Database functions to fetch data
-import bcrypt from 'bcryptjs';  // Import bcrypt for password comparison
-import { database } from '../firebase';  // Import your Firebase Realtime Database
 
 // Function to validate Doctor ID (should start with 'D' followed by 5 digits)
 const isValidDoctorID = (doctorID) => {
@@ -21,11 +18,51 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [lockoutTime, setLockoutTime] = useState(null); // Store lockout time
+  const [countdown, setCountdown] = useState(0); // Countdown state
+  const [lockoutDuration, setLockoutDuration] = useState(60); // Initial lockout duration in seconds (1 min)
 
   const navigate = useNavigate();
   const auth = getAuth();  // Initialize Firebase Authentication
 
+  // Check if user is currently locked out
+  useEffect(() => {
+    const storedLockoutTime = localStorage.getItem('lockoutTime');
+    if (storedLockoutTime && new Date(storedLockoutTime) > new Date()) {
+      const lockoutDate = new Date(storedLockoutTime);
+      setLockoutTime(lockoutDate);
+
+      // Calculate remaining time in seconds and start the countdown
+      const remainingTime = Math.ceil((lockoutDate - new Date()) / 1000);
+      setCountdown(remainingTime);
+
+      // Update countdown every second
+      const intervalId = setInterval(() => {
+        setCountdown((prev) => {
+          if (prev > 1) {
+            return prev - 1;
+          } else {
+            clearInterval(intervalId);
+            localStorage.removeItem('lockoutTime'); // Remove lockout time once countdown finishes
+            return 0;
+          }
+        });
+      }, 1000);
+
+      return () => clearInterval(intervalId); // Clear interval on unmount
+    }
+  }, []);
+
+  // Handle login logic
   const handleLogin = async () => {
+    // Check if user is locked out
+    const storedLockoutTime = localStorage.getItem('lockoutTime');
+    if (storedLockoutTime && new Date(storedLockoutTime) > new Date()) {
+      const remainingTime = Math.ceil((new Date(storedLockoutTime) - new Date()) / 1000 / 60); // Minutes remaining
+      setError(`Too many login attempts. Try again in ${Math.floor(countdown / 60)} minutes and ${countdown % 60} seconds.`);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -44,34 +81,51 @@ const LoginPage = () => {
       // Use the doctorID as email
       const email = `${sanitizedDoctorID}@yourdomain.com`;
 
-      // Sign in using Firebase Authentication (Firebase Auth checks for the plain password)
+      // Simulate login request (replace this with actual authentication logic)
       const authResult = await signInWithEmailAndPassword(auth, email, sanitizedPassword);
 
-      // Get the UID of the authenticated user
-      const uid = authResult.user.uid;
+      // If login is successful, reset the failed attempts and lockout time
+      localStorage.removeItem('failedAttempts');
+      localStorage.removeItem('lockoutTime');
+      setLockoutDuration(60); // Reset lockout duration to 1 minute
 
-      // Fetch the stored hashed password from Firebase Realtime Database
-      const userRef = ref(database, 'doctors/' + uid);
-      const userSnapshot = await get(userRef);
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.val();
-        const hashedPassword = userData.password;
-
-        // Compare the entered password with the hashed password using bcrypt
-        const isPasswordCorrect = await bcrypt.compare(sanitizedPassword, hashedPassword);
-
-        if (isPasswordCorrect) {
-          // Redirect to the "patient info" page after successful login
-          navigate('/main');
-        } else {
-          setError('Incorrect Doctor ID or Password.');
-        }
-      } else {
-        setError('Doctor not found.');
-      }
+      // Redirect to the "patient info" page after successful login
+      navigate('/main');
+      
     } catch (error) {
       console.error('Login failed:', error);
-      setError('Login failed. Please check your credentials and try again.');
+
+      // Increment failed attempts
+      let failedAttempts = parseInt(localStorage.getItem('failedAttempts')) || 0;
+      failedAttempts += 1;
+
+      if (failedAttempts >= 5) {
+        // Lock the user out for the current lockout duration
+        const lockoutUntil = new Date(new Date().getTime() + lockoutDuration * 1000).toISOString();
+        localStorage.setItem('lockoutTime', lockoutUntil);
+
+        // Start countdown with the current lockout duration
+        setCountdown(lockoutDuration);
+        
+        // Double the lockout duration for subsequent failures
+        setLockoutDuration(lockoutDuration * 2);
+
+        // Update countdown every second
+        const intervalId = setInterval(() => {
+          setCountdown((prev) => {
+            if (prev > 1) {
+              return prev - 1;
+            } else {
+              clearInterval(intervalId);
+              localStorage.removeItem('lockoutTime');
+              return 0;
+            }
+          });
+        }, 1000);
+      } else {
+        localStorage.setItem('failedAttempts', failedAttempts);
+        setError(`Incorrect password. You have ${5 - failedAttempts} attempts remaining.`);
+      }
     } finally {
       setLoading(false);
     }
@@ -82,24 +136,27 @@ const LoginPage = () => {
       <div className="p-6 bg-[#f6f8eb] rounded-md shadow-md w-96 border border-[#234f32]">
         <h1 className="text-2xl mb-6 text-center text-[#234f32]">EMMS</h1>
         {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
-        <input 
-          type="text" 
-          value={doctorID} 
-          onChange={(e) => setDoctorID(e.target.value)} 
-          placeholder="Doctor ID (e.g. D012345)" 
+        {countdown > 0 && <p className="text-red-500 mb-4 text-center">
+          Too many login attempts. Try again in {Math.floor(countdown / 60)} minutes and {countdown % 60} seconds.
+        </p>}
+        <input
+          type="text"
+          value={doctorID}
+          onChange={(e) => setDoctorID(e.target.value)}
+          placeholder="Doctor ID (e.g. D012345)"
           className="border border-[#234f32] rounded px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-[#234f32]"
         />
-        <input 
-          type="password" 
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          placeholder="Password" 
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
           className="border border-[#234f32] rounded px-4 py-2 mb-6 w-full focus:outline-none focus:ring-2 focus:ring-[#234f32]"
         />
-        <button 
+        <button
           className={`bg-[#234f32] text-white px-4 py-2 rounded w-full hover:bg-[#1b3e27] transition ${loading ? 'cursor-wait' : ''}`}
           onClick={handleLogin}
-          disabled={loading}
+          disabled={loading || countdown > 0}
         >
           {loading ? 'Logging in...' : 'Login'}
         </button>
