@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
-import { registerDoctor } from '../services/authService';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
-import PatientInfoPage from './PatientInfoPage';
+import { Link, useNavigate } from 'react-router-dom';
+import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';  // Firebase Authentication
+import { ref, set } from 'firebase/database';  // Firebase Database functions
+import bcrypt from 'bcryptjs';  // Import bcrypt for password hashing
+import { database } from '../firebase';  // Import your Firebase Realtime Database
 
 // Function to validate Doctor ID (should start with 'D' followed by 5 digits)
 const isValidDoctorID = (doctorID) => {
@@ -14,13 +16,25 @@ const sanitizeInput = (input) => {
   return input.replace(/[^a-zA-Z0-9]/g, ''); // Removes any non-alphanumeric characters
 };
 
+// Function to hash the password
+const hashPassword = async (password) => {
+  const saltRounds = 10;
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  } catch (error) {
+    console.error('Error hashing password:', error);
+  }
+};
+
 const RegisterPage = () => {
   const [doctorID, setDoctorID] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const navigate = useNavigate(); // Initialize the navigate function
+  const navigate = useNavigate(); 
+  const auth = getAuth();  // Initialize Firebase Authentication
 
   const handleRegister = async () => {
     setLoading(true);
@@ -38,13 +52,26 @@ const RegisterPage = () => {
     const sanitizedPassword = sanitizeInput(password);
 
     try {
-      const result = await registerDoctor(sanitizedDoctorID, sanitizedPassword);
-      if (!result.success) {
-        setError(result.message); // Display the user-friendly error message
-      } else {
-        // Redirect to the "patient info" page after successful registration
-        navigate('/main');
-      }
+      // Hash the password before saving
+      const hashedPassword = await hashPassword(sanitizedPassword);
+
+      // Create a user in Firebase Authentication using doctorID as the email
+      const email = sanitizedDoctorID + '@yourdomain.com';  // Use doctorID to create a dummy email
+      const authResult = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Get the UID from the authResult to store in Realtime Database
+      const uid = authResult.user.uid;
+
+      // Save the hashed password and doctorID in the "doctors" node of Realtime Database
+      await set(ref(database, 'doctors/' + uid), {
+        doctorID: sanitizedDoctorID,
+        password: hashedPassword,  // Store the hashed password
+        createdAt: new Date().toISOString()  // Store the creation date
+      });
+
+      // Redirect to the "patient info" page after successful registration
+      navigate('/main');
+
     } catch (error) {
       console.error('Registration failed:', error);
       setError('An unexpected error occurred. Please try again.');
@@ -57,7 +84,7 @@ const RegisterPage = () => {
     <div className="flex justify-center items-center h-screen bg-[#f4f8ef]">
       <div className="p-6 bg-[#f6f8eb] rounded-md shadow-md w-96 border border-[#234f32]">
         <h2 className="text-2xl mb-6 text-center text-[#234f32]">EMMS</h2>
-        {error && <p className="text-red-500 mb-4 text-center">{error}</p>} {/* Display the friendly error message */}
+        {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
         <input 
           type="text" 
           value={doctorID} 
