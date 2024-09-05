@@ -2,6 +2,17 @@ import React, { useState } from 'react';
 import { loginDoctor } from '../services/authService';
 import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
 
+// Function to validate Doctor ID (should start with 'D' followed by 5 digits)
+const isValidDoctorID = (doctorID) => {
+  const doctorIDPattern = /^D\d{5}$/; // Doctor ID must start with 'D' and be followed by exactly 5 digits
+  return doctorIDPattern.test(doctorID);
+};
+
+// Function to sanitize inputs (removing unwanted characters)
+const sanitizeInput = (input) => {
+  return input.replace(/[^a-zA-Z0-9]/g, ''); // Removes any non-alphanumeric characters
+};
+
 const LoginPage = () => {
   const [doctorID, setDoctorID] = useState('');
   const [password, setPassword] = useState('');
@@ -13,10 +24,22 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true);
     setError('');
+
+    // Validate Doctor ID
+    if (!isValidDoctorID(doctorID)) {
+      setError('Invalid Doctor ID.');
+      setLoading(false);
+      return;
+    }
+
+    // Sanitize inputs
+    const sanitizedDoctorID = sanitizeInput(doctorID);
+    const sanitizedPassword = sanitizeInput(password);
+
     try {
-      const result = await loginDoctor(doctorID, password);
+      const result = await loginDoctor(sanitizedDoctorID, sanitizedPassword);
       if (!result.success) {
-        setError(result.message); // Display the user-friendly error message
+        setError('Incorrect Doctor ID or Password.'); // Display generic error message
       } else {
         // Redirect to the "patient info" page after successful login
         navigate('/main');
@@ -38,7 +61,7 @@ const LoginPage = () => {
           type="text" 
           value={doctorID} 
           onChange={(e) => setDoctorID(e.target.value)} 
-          placeholder="Doctor ID" 
+          placeholder="Doctor ID (e.g. D012345)" 
           className="border border-[#234f32] rounded px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-[#234f32]"
         />
         <input 
