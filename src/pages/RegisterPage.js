@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';  // Firebase Authentication
 import { ref, set } from 'firebase/database';  // Firebase Database functions
-import bcrypt from 'bcryptjs';  // Import bcrypt for password hashing
 import { database } from '../firebase';  // Import your Firebase Realtime Database
 
 // Function to validate Doctor ID (should start with 'D' followed by 5 digits)
@@ -14,17 +13,6 @@ const isValidDoctorID = (doctorID) => {
 // Function to sanitize inputs (removing unwanted characters)
 const sanitizeInput = (input) => {
   return input.replace(/[^a-zA-Z0-9]/g, ''); // Removes any non-alphanumeric characters
-};
-
-// Function to hash the password
-const hashPassword = async (password) => {
-  const saltRounds = 10;
-  try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    return hashedPassword;
-  } catch (error) {
-    console.error('Error hashing password:', error);
-  }
 };
 
 const RegisterPage = () => {
@@ -52,20 +40,16 @@ const RegisterPage = () => {
     const sanitizedPassword = sanitizeInput(password);
 
     try {
-      // Hash the password before saving
-      const hashedPassword = await hashPassword(sanitizedPassword);
-
       // Create a user in Firebase Authentication using doctorID as the email
       const email = sanitizedDoctorID + '@yourdomain.com';  // Use doctorID to create a dummy email
-      const authResult = await createUserWithEmailAndPassword(auth, email, password);
+      const authResult = await createUserWithEmailAndPassword(auth, email, sanitizedPassword);
 
       // Get the UID from the authResult to store in Realtime Database
       const uid = authResult.user.uid;
 
-      // Save the hashed password and doctorID in the "doctors" node of Realtime Database
+      // Save the doctorID in the "doctors" node of Realtime Database
       await set(ref(database, 'doctors/' + uid), {
         doctorID: sanitizedDoctorID,
-        password: hashedPassword,  // Store the hashed password
         createdAt: new Date().toISOString()  // Store the creation date
       });
 
