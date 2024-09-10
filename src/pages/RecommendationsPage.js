@@ -5,6 +5,7 @@ import { ref, get, child, update } from 'firebase/database';
 import { database } from '../firebase'; 
 import '../App.css';
 import Popup from './Popup'; 
+import useAutoLogout from '../services/useAutoLogout';
 
 const RecommendationsPage = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -14,6 +15,7 @@ const RecommendationsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const patientData = location.state?.patientData || {};
+  const countdown = useAutoLogout();
 
   useEffect(() => {
     console.log(patientData);
@@ -163,6 +165,10 @@ const RecommendationsPage = () => {
             <button className="mr-4 px-6 py-2 border rounded text-green-900 bg-white" onClick={handleAccept}>Accept</button>
             <button className="px-6 py-2 border rounded text-green-900 bg-white" onClick={handleIgnore}>Ignore</button>
           </div>
+        </div>
+        {/* Countdown Timer */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
+          <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
       {showPopup && <Popup onOk={handlePopupOk} />} {/* Conditionally render the Popup */}
