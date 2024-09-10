@@ -4,6 +4,7 @@ import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import { ref, update } from 'firebase/database';
 import { database } from '../firebase'; 
 import '../App.css';
+import useAutoLogout from '../services/useAutoLogout';
 
 const SelectPrescriptionPage = () => {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ const SelectPrescriptionPage = () => {
   const patientData = location.state?.patientData || {};
   const [selectedDrug, setSelectedDrug] = useState('');
   const [error, setError] = useState('');
+
+  const countdown = useAutoLogout();
 
   const drugsList = [
     'Acetylcarnitine',
@@ -291,6 +294,10 @@ const SelectPrescriptionPage = () => {
               Cancel
             </button>
           </div>
+        </div>
+        {/* Countdown Timer */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
+          <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
     </div>
