@@ -10,6 +10,7 @@ import ReassessingPage from './pages/ReassessingPage';
 import SelectPrescriptionPage from './pages/SelectPrescriptionPage';
 import { database } from './firebase';
 import { ref, get } from "firebase/database";
+import useAutoLogout from './services/useAutoLogout'; 
 
 function App() {
   return (
@@ -31,6 +32,9 @@ function App() {
 const MainLayout = () => {
   const [patientID, setPatientID] = useState('');
   const navigate = useNavigate();
+
+  // Use the custom hook to handle auto logout and get the countdown timer
+  const countdown = useAutoLogout(); 
 
   const handleSearchClick = async () => {
     if (!patientID.trim()) {
@@ -77,7 +81,7 @@ const MainLayout = () => {
         </nav>
       </div>
       {/* Main Content */}
-      <div className="main-content flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
+      <div className="main-content flex-1 flex flex-col items-center justify-center bg-[#F4F8EF] relative">
         <div className="text-center">
           <h1 className="heading text-2xl text-green-900 font-semibold mb-4">Please enter the patient ID:</h1>
           <label className="label text-sm text-green-800 mb-2 block" htmlFor="patient-id">Patient ID (e.g. PA12345)</label>
@@ -90,6 +94,11 @@ const MainLayout = () => {
             className="input border border-green-900 rounded px-4 py-2 mb-4" 
           />
           <button className="button bg-green-900 text-white px-6 py-2 rounded" onClick={handleSearchClick}>SEARCH</button>
+        </div>
+
+        {/* Countdown Timer Display */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
+          <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
     </div>
