@@ -1,29 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaSignOutAlt, FaPlusCircle } from 'react-icons/fa';
-import { ref, get, child } from 'firebase/database';
-import { database } from '../firebase'; // Ensure that this is the correct path to your Firebase instance
+import { ref, get } from 'firebase/database';
+import { database } from '../firebase';
+import useAutoLogout from '../services/useAutoLogout'; // Import the custom hook
 import '../App.css';
 
 const PatientInfoPage = () => {
-  const [patientData, setPatientData] = useState(null); // State to store patient data
-  const [loading, setLoading] = useState(true); // State to handle loading state
-  const [error, setError] = useState(null); // State to handle any errors
+  const [patientData, setPatientData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const patientID = location.state?.patientData?.ID; // Get the patient ID from location state
+  const { state } = useLocation();
+  const patientID = state?.patientData?.ID;
 
+  // Use the custom hook to handle auto logout and countdown
+  const countdown = useAutoLogout(); 
+
+  // Fetch patient data
   useEffect(() => {
     const fetchPatientData = async () => {
       if (patientID) {
         try {
-          const patientRef = ref(database, `patients/${patientID}`);
-          const snapshot = await get(child(patientRef, '/'));
-  
+          const snapshot = await get(ref(database, `patients/${patientID}`));
           if (snapshot.exists()) {
-            const data = snapshot.val();
-            console.log('Fetched patient data:', data);  // Add this line
-            setPatientData(data); // Set the fetched data to state
+            setPatientData(snapshot.val());
           } else {
             setError('No data available for this patient.');
           }
@@ -31,32 +32,24 @@ const PatientInfoPage = () => {
           console.error('Error fetching patient data:', error);
           setError('Failed to fetch patient data. Please try again.');
         } finally {
-          setLoading(false); // Set loading to false once the data is fetched
+          setLoading(false);
         }
       } else {
         setLoading(false);
         setError('No patient ID provided.');
       }
     };
-  
+
     fetchPatientData();
   }, [patientID]);
-  
+
   const handleAddPrescriptions = () => {
     navigate('/select-prescriptions', { state: { patientData } });
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // Display a loading state
-  }
-
-  if (error) {
-    return <div>{error}</div>; // Display any errors
-  }
-
-  if (!patientData) {
-    return <div>No patient data available</div>;
-  }
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
+  if (!patientData) return <div>No patient data available</div>
 
   return (
     <div className="flex">
@@ -66,17 +59,13 @@ const PatientInfoPage = () => {
           <img src="https://placehold.co/50x50" alt="MDS logo" />
         </div>
         <nav className="flex flex-col gap-8 text-green-200">
-        <Link to="/main">
-            <FaUser className="text-2xl" />
-        </Link>
+          <Link to="/main"><FaUser className="text-2xl" /></Link>
           <FaEnvelope className="text-2xl" />
-        <Link to="/login">
-            <FaSignOutAlt className="text-2xl" />
-        </Link>
+          <Link to="/login"><FaSignOutAlt className="text-2xl" /></Link>
         </nav>
       </div>
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
+      <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF] relative">
         <div className="w-full max-w-4xl p-8">
           <div className="flex justify-end mb-6">
             <input type="text" placeholder="Search..." className="border border-green-900 rounded px-4 py-2" />
@@ -135,6 +124,10 @@ const PatientInfoPage = () => {
               Add new prescription
             </button>
           </div>
+        </div>
+        {/* Countdown Timer */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
+          <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
     </div>
