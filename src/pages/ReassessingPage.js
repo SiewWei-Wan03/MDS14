@@ -4,6 +4,7 @@ import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import { ref, update, get, child } from 'firebase/database'; // Import Firebase functions
 import { database } from '../firebase'; // Import Firebase instance
 import '../App.css';
+import useAutoLogout from '../services/useAutoLogout';
 
 const ReassessingPage = () => {
   const [drugs, setDrugs] = useState([]);
@@ -13,6 +14,7 @@ const ReassessingPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // Use useLocation hook
   const patientData = location.state?.patientData || {}; // Get patient data from location state
+  const countdown = useAutoLogout();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -191,6 +193,10 @@ const ReassessingPage = () => {
             Save
           </button>
           {error && <div className="text-red-500 mt-4">{error}</div>}
+        </div>
+        {/* Countdown Timer */}
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
+          <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
     </div>
