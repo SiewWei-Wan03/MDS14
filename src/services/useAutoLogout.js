@@ -5,14 +5,22 @@ const useAutoLogout = () => {
   const [countdown, setCountdown] = useState(180); // 180 seconds countdown (3 minutes)
   const navigate = useNavigate();
 
-  // Helper function to delete a cookie
+  // Helper function to get all cookies
+  const getAllCookies = () => {
+    const cookies = document.cookie.split(';');
+    const cookieList = cookies.map(cookie => cookie.trim().split('=')[0]);
+    return cookieList;
+  };
+
+  // Helper function to delete a specific cookie
   const deleteCookie = (cookieName) => {
     document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   };
 
-  // Function to log out and delete cookies
+  // Function to log out and delete all cookies
   const handleLogout = () => {
-    deleteCookie('sessionID'); // Replace 'sessionID' with the actual cookie name
+    const allCookies = getAllCookies();
+    allCookies.forEach(deleteCookie); // Delete all cookies
     navigate('/login'); // Redirect to login page
   };
 
@@ -25,7 +33,7 @@ const useAutoLogout = () => {
       if (countdownTimer) clearInterval(countdownTimer);
 
       // Reset the countdown
-      setCountdown(180); //3 minutes
+      setCountdown(180); // 3 minutes
 
       // Start a countdown that updates every second
       countdownTimer = setInterval(() => {
