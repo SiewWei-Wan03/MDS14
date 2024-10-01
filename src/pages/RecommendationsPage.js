@@ -4,11 +4,9 @@ import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
 import { ref, get, child, update } from 'firebase/database';
 import { database } from '../firebase'; 
 import '../App.css';
-import Popup from './Popup'; 
 import useAutoLogout from '../services/useAutoLogout';
 
 const RecommendationsPage = () => {
-  const [showPopup, setShowPopup] = useState(false);
   const [predicted_retried_prescriptions, setPrescriptions] = useState([]);
   const [advices, setAdvices] = useState([]);
   const [error, setError] = useState('');
@@ -48,11 +46,6 @@ const RecommendationsPage = () => {
   }, [location.state?.patientData]);
 
   const handleIgnore = () => {
-    setShowPopup(true);
-  };
-
-  const handlePopupOk = () => {
-    setShowPopup(false);
     navigate('/reassessing', { state: { patientData } });
   };
 
@@ -171,7 +164,6 @@ const RecommendationsPage = () => {
           <p>Time until logout: {countdown} seconds</p>
         </div>
       </div>
-      {showPopup && <Popup onOk={handlePopupOk} />} {/* Conditionally render the Popup */}
     </div>
   );
 };
