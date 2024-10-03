@@ -13,6 +13,7 @@ const PatientInfoPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const patientID = state?.patientData?.ID;
+  
 
   // Use the custom hook to handle auto logout and countdown
   const countdown = useAutoLogout(); 
@@ -85,7 +86,7 @@ const PatientInfoPage = () => {
                 <p>Age: <span className="font-semibold">{patientData.age}</span></p>
                 <p>Patient ID: <span className="font-semibold">{patientData.ID}</span></p>
               </div>
-              <div className="w-1/3">
+              <div className="w-1/3 max-h-40 overflow-y-auto">
                 <h2 className="text-green-900 font-semibold mb-4">Medical Conditions:</h2>
                 <ul className="text-left">
                   {patientData.conditions.map((condition, index) => (
@@ -99,26 +100,28 @@ const PatientInfoPage = () => {
           </div>
           <div className="text-center mb-8">
             <h2 className="text-2xl text-green-900 font-semibold mb-4">Prescription History</h2>
-            <table className="table-auto w-full text-left">
-              <thead>
-                <tr>
-                  <th className="px-4 py-2 border border-green-900">Drugs</th>
-                  <th className="px-4 py-2 border border-green-900">Dosage</th>
-                  <th className="px-4 py-2 border border-green-900">Date</th>
-                  <th className="px-4 py-2 border border-green-900">Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {patientData.prescriptions.map((prescription, index) => (
-                  <tr key={index}>
-                    <td className="px-4 py-2 border border-green-900">{prescription.drug}</td>
-                    <td className="px-4 py-2 border border-green-900">{prescription.dosage}</td>
-                    <td className="px-4 py-2 border border-green-900">{prescription.date}</td>
-                    <td className="px-4 py-2 border border-green-900">{prescription.time}</td>
+            <div className="overflow-x-auto">
+              <table className="table-auto w-full text-left">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2 border border-green-900">Drugs</th>
+                    <th className="px-4 py-2 border border-green-900">Dosage</th>
+                    <th className="px-4 py-2 border border-green-900">Date</th>
+                    <th className="px-4 py-2 border border-green-900">Time</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {patientData.prescriptions.map((prescription, index) => (
+                    <tr key={index}>
+                      <td className="px-4 py-2 border border-green-900">{prescription.drug}</td>
+                      <td className="px-4 py-2 border border-green-900">{prescription.dosage}</td>
+                      <td className="px-4 py-2 border border-green-900">{prescription.date}</td>
+                      <td className="px-4 py-2 border border-green-900">{prescription.time}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <button onClick={handleAddPrescriptions} className="flex items-center mt-4 text-green-900 bg-transparent border-none cursor-pointer">
               <FaPlusCircle className="mr-2" />
               Add new prescription
