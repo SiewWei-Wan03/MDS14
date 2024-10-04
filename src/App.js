@@ -67,9 +67,9 @@ const MainLayout = () => {
     <div className="flex">
       {/* Sidebar */}
       <div className="sidebar w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
-        <div className="logo mb-12">
-          <img src="https://placehold.co/50x50" alt="MDS logo" />
-        </div>
+      <div className="logo mb-12">
+        <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+      </div>
         <nav className="nav-icons flex flex-col gap-8 text-green-200">
           <Link to="/main">
             <FaUser className="text-2xl" />

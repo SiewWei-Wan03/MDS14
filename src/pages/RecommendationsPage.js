@@ -7,60 +7,33 @@ import '../App.css';
 import useAutoLogout from '../services/useAutoLogout';
 
 const RecommendationsPage = () => {
-  const [predicted_retried_prescriptions, setPrescriptions] = useState([]);
-  const [advices, setAdvices] = useState([]);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [dosage, setDosage] = useState(0); // State for dosage control
   const patientData = location.state?.patientData || {};
+  const ddiCategory = location.state?.ddiCategory || 'N/A';  // Get ddiCategory from navigation state
+  const selectedPreviousDrugs = location.state?.selectedPreviousDrug || 'No previous drugs'; // Default text
+  const selectedDrugs = location.state?.selectedDrug || 'No selected drugs'; // Default text
   const countdown = useAutoLogout();
-
-  useEffect(() => {
-    console.log(patientData);
-
-    const fetchPrescriptionsAndAdvices = async () => {
-      try {
-        const patientRef = ref(database, `patients/${patientData.ID}`);
-    
-        const [nprescriptionsSnapshot, advicesSnapshot] = await Promise.all([
-          get(child(patientRef, 'predicted_prescriptions')),
-          get(child(patientRef, 'predicted_advices'))
-        ]);
-    
-        const nprescriptions = nprescriptionsSnapshot.val() || [];
-        setPrescriptions(nprescriptions);
-        console.log(nprescriptions);
-    
-        const advicesData = advicesSnapshot.val() || '';
-        const advicesList = advicesData.split('.').filter(sentence => sentence.trim() !== '').map(sentence => sentence.trim() + '.');
-        setAdvices(advicesList);
-        console.log(advicesList);
-    
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setError('Failed to fetch data. Please try again.');
-      }
-    };
-
-    fetchPrescriptionsAndAdvices();
-  }, [location.state?.patientData]);
 
   const handleIgnore = () => {
     navigate('/reassessing', { state: { patientData } });
   };
 
+  const handleDosageChange = (e) => {
+    setDosage(e.target.value); // Update dosage state when value changes
+  };
+
   const handleAccept = async () => {
     const patientData = location.state?.patientData || {};
+    const selectedDrugs = location.state?.selectedDrug || 'No selected drugs'; // Get the selected drug from state
   
     try {
-      // Create a reference to the specific patient's data
+      // Create a reference to the specific patient's data in Firebase
       const patientRef = ref(database, `patients/${patientData.ID}`);
   
-      // Fetch predicted prescriptions
-      const nprescriptionsSnapshot = await get(child(patientRef, 'predicted_prescriptions'));
-      const nprescriptions = nprescriptionsSnapshot.val() || [];
-  
-      // Fetch existing prescriptions
+      // Fetch existing prescriptions from Firebase
       const existingPrescriptionsSnapshot = await get(child(patientRef, 'prescriptions'));
       const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
   
@@ -69,40 +42,39 @@ const RecommendationsPage = () => {
       const formattedDate = currentDate.toISOString().split('T')[0];
       const formattedTime = currentDate.toTimeString().split(' ')[0].slice(0, 5);
   
-      // Add current date and time to each predicted prescription
-      const updatedNprescriptions = nprescriptions.map(prescription => ({
-        ...prescription,
-        date: formattedDate,
-        time: formattedTime,
-      }));
+      // Create a new prescription entry with selectedDrugs and dosage
+      const newPrescription = {
+        drug: selectedDrugs, // Add selected drug(s)
+        dosage, // Add the selected dosage (from the state)
+        date: formattedDate, // Add the current date
+        time: formattedTime, // Add the current time
+        previousDrug: selectedPreviousDrugs,
+        ddiCategory, // Add the DDI category from the previous state
+      };
   
-      // Combine predicted prescriptions with existing ones
-      const updatedPrescriptions = [...(existingPrescriptions || []), ...(updatedNprescriptions || [])];
+      // Combine the new prescription with existing ones
+      const updatedPrescriptions = [...(existingPrescriptions || []), newPrescription];
   
-      // Update the combined prescriptions list to the 'prescriptions' location
+      // Update the combined prescriptions list to Firebase
       await update(patientRef, { prescriptions: updatedPrescriptions });
   
-      // Update predicted_prescriptions and predicted_advices to null
-      await update(patientRef, {
-        predicted_prescriptions: null,
-        predicted_advices: null
-      });
-  
-      // Navigate to the patient-info page
+      // Navigate to the patient-info page after saving
       navigate('/patient-info', { state: { patientData } });
     } catch (error) {
       console.error('Error updating data:', error); // Log any errors
       setError('Failed to update data. Please try again.'); // Set an error message
     }
   };
+  
+  
 
   return (
     <div className="flex">
       {/* Sidebar */}
       <div className="w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
-        <div className="mb-12">
-          <img src="https://placehold.co/50x50" alt="MDS logo" />
-        </div>
+      <div className="logo mb-12">
+        <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+      </div>
         <nav className="flex flex-col gap-8 text-green-200">
         <Link to="/main">
             <FaUser className="text-2xl" />
@@ -117,9 +89,17 @@ const RecommendationsPage = () => {
       <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
         <div className="w-full max-w-4xl p-8">
           <h1 className="text-3xl text-green-900 font-semibold mb-6">
-            Recommended drugs combinations and dosages
+            Recommended Drugs Combinations and Dosages
           </h1>
+
+          {/* Display selected drugs and DDI category */}
+          <div className="mb-6">
+            <h2 className="text-2xl text-green-900 font-semibold">{selectedPreviousDrugs} & {selectedDrugs}: {ddiCategory}</h2>
+          </div>
+
           {error && <p className="text-red-500 mb-4">{error}</p>}
+
+          {/* Prescription Table */}
           <table className="w-full mb-6 border-collapse">
             <thead>
               <tr>
@@ -128,37 +108,29 @@ const RecommendationsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {predicted_retried_prescriptions.length > 0 ? (
-                predicted_retried_prescriptions.map((prescription, index) => (
-                  <tr key={index}>
-                    <td className="p-2 border border-green-900">{prescription.drug}</td>
-                    <td className="p-2 border border-green-900">{prescription.dosage}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="2" className="p-2 border border-green-900 text-center">No prescriptions available</td>
-                </tr>
-              )}
+              <tr>
+                <td className="p-2 border border-green-900">{selectedDrugs}</td>
+                <td className="p-2 border border-green-900">
+                  <input 
+                    type="number" 
+                    value={dosage} 
+                    onChange={handleDosageChange} 
+                    className="border p-1 w-20"
+                    min="0"
+                    step="1"
+                  />
+                </td>
+              </tr>
             </tbody>
-          </table>
-          <div className="mb-6">
-            <h2 className="text-2xl text-green-900 font-semibold mb-4">Additional lifestyle or dietary advice:</h2>
-            <ul className="list-disc list-inside text-green-900">
-              {advices.length > 0 ? (
-                advices.map((description, index) => (
-                  <li key={index}>{description}</li>
-                ))
-              ) : (
-                <li>No additional advice available</li>
-              )}
-            </ul>
-          </div>
+          </table>        
+
+          {/* Accept/Ignore Buttons */}
           <div className="flex justify-end">
             <button className="mr-4 px-6 py-2 border rounded text-green-900 bg-white" onClick={handleAccept}>Accept</button>
             <button className="px-6 py-2 border rounded text-green-900 bg-white" onClick={handleIgnore}>Ignore</button>
           </div>
         </div>
+
         {/* Countdown Timer */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-sm text-green-900">
           <p>Time until logout: {countdown} seconds</p>

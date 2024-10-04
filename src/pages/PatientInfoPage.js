@@ -56,9 +56,9 @@ const PatientInfoPage = () => {
     <div className="flex">
       {/* Sidebar */}
       <div className="w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
-        <div className="mb-12">
-          <img src="https://placehold.co/50x50" alt="MDS logo" />
-        </div>
+      <div className="logo mb-12">
+        <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+      </div>
         <nav className="flex flex-col gap-8 text-green-200">
           <Link to="/main"><FaUser className="text-2xl" /></Link>
           <FaEnvelope className="text-2xl" />
@@ -68,23 +68,23 @@ const PatientInfoPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF] relative">
         <div className="w-full max-w-4xl p-8">
-          <div className="flex justify-end mb-6">
+          {/* <div className="flex justify-end mb-6">
             <input type="text" placeholder="Search..." className="border border-green-900 rounded px-4 py-2" />
-          </div>
+          </div> */}
           <div className="text-center mb-8">
             <h1 className="text-3xl text-green-900 font-semibold mb-4">General Information</h1>
             <div className="flex justify-around">
               <div className="bg-green-900 text-white p-6 rounded-lg w-1/3 text-left">
                 <div className="flex items-center mb-4">
-                  <img src="https://placehold.co/50x50" alt="Patient avatar" className="rounded-full mr-4" />
+                  <img src="/patient1.png" alt="Patient avatar" className="w-12 h-12 mr-4" />
                   <div>
                     <p className="font-semibold">Patient</p>
                     <p>{patientData.name}</p>
                   </div>
                 </div>
-                <p>Date of birth: <span className="font-semibold">{patientData.DOB}</span></p>
-                <p>Age: <span className="font-semibold">{patientData.age}</span></p>
-                <p>Patient ID: <span className="font-semibold">{patientData.ID}</span></p>
+                <p className='font-semibold'>Date of birth: <span className='font-normal'>{patientData.DOB}</span></p>
+                <p className='font-semibold'>Age: <span className="font-normal">{patientData.age}</span></p>
+                <p className='font-semibold'>Patient ID: <span className="font-normal">{patientData.ID}</span></p>
               </div>
               <div className="w-1/3 max-h-40 overflow-y-auto">
                 <h2 className="text-green-900 font-semibold mb-4">Medical Conditions:</h2>
@@ -100,7 +100,7 @@ const PatientInfoPage = () => {
           </div>
           <div className="text-center mb-8">
             <h2 className="text-2xl text-green-900 font-semibold mb-4">Prescription History</h2>
-            <div className="overflow-x-auto">
+            <div className="h-64 overflow-y-auto">
               <table className="table-auto w-full text-left">
                 <thead>
                   <tr>

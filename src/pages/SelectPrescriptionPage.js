@@ -299,10 +299,10 @@ const SelectPrescriptionPage = () => {
       
     // DDI mapping
     const ddi_mapping = {
-      'no interaction found': 0,
-      'minor': 1,
-      'moderate': 2,
-      'major': 3
+      'No interaction found, can be prescribed safely.': 0,
+      'Minor interaction found': 1,
+      'Moderate interaction found, better to choose another prescription.': 2,
+      'Major interaction found, should not be prescribed.': 3
     };
 
     // Find the maximum prediction value and its index
@@ -326,8 +326,8 @@ const SelectPrescriptionPage = () => {
       const updatedPrescription = selectedDrug;
   
       await update(patientRef, { selected_prescription: updatedPrescription });
-  
-      navigate('/recommendations', { state: { patientData } });
+
+      navigate('/recommendations', { state: { patientData, ddiCategory, selectedDrug, selectedPreviousDrug } });
     
     } catch (error) {
       console.error('Error saving prescription:', error);
@@ -339,9 +339,9 @@ const SelectPrescriptionPage = () => {
     <div className="flex">
       {/* Sidebar */}
       <div className="w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
-        <div className="mb-12">
-          <img src="https://placehold.co/50x50" alt="MDS logo" />
-        </div>
+      <div className="logo mb-12">
+        <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+      </div>
         <nav className="flex flex-col gap-8 text-green-200">
           <Link to="/main">
             <FaUser className="text-2xl" />
