@@ -61,7 +61,6 @@ const PatientInfoPage = () => {
       </div>
         <nav className="flex flex-col gap-8 text-green-200">
           <Link to="/main"><FaUser className="text-2xl" /></Link>
-          <FaEnvelope className="text-2xl" />
           <Link to="/login"><FaSignOutAlt className="text-2xl" /></Link>
         </nav>
       </div>

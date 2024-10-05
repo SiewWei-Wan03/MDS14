@@ -79,7 +79,6 @@ const RecommendationsPage = () => {
         <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
-          <FaEnvelope className="text-2xl" />
           <Link to="/login">
             <FaSignOutAlt className="text-2xl" />
           </Link>
