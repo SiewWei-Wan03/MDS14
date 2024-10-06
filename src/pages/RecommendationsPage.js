@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 import { ref, get, child, update } from 'firebase/database';
@@ -6,77 +6,119 @@ import { database } from '../firebase';
 import '../App.css';
 import useAutoLogout from '../services/useAutoLogout';
 
+// PubChem API URL for retrieving chemical structure images
+const getDrugImageUrl = (drugName) => `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${drugName}/PNG`;
+
 const RecommendationsPage = () => {
   const [error, setError] = useState('');
+  const [warning, setWarning] = useState(''); // State for showing warning if dosage is less than 1
+  const [previousDrugImageUrl, setPreviousDrugImageUrl] = useState(null); // State to store previous drug image URL
+  const [selectedDrugImageUrl, setSelectedDrugImageUrl] = useState(null); // State to store selected drug image URL
+  const [dosage, setDosage] = useState(1); // State for dosage control with default value of 1
   const navigate = useNavigate();
   const location = useLocation();
-  const [dosage, setDosage] = useState(0); // State for dosage control
+  const countdown = useAutoLogout();
+  
   const patientData = location.state?.patientData || {};
   const ddiCategory = location.state?.ddiCategory || 'N/A';  // Get ddiCategory from navigation state
   const selectedPreviousDrugs = location.state?.selectedPreviousDrug || 'No previous drugs'; // Default text
   const selectedDrugs = location.state?.selectedDrug || 'No selected drugs'; // Default text
-  const countdown = useAutoLogout();
+
+  useEffect(() => {
+    // Fetch the chemical structure images for both previousDrug and selectedDrug
+    const fetchDrugImages = async () => {
+      if (selectedPreviousDrugs && selectedPreviousDrugs !== 'No previous drugs') {
+        try {
+          const responsePrevious = await fetch(getDrugImageUrl(selectedPreviousDrugs)); // Fetch image from PubChem for previous drug
+          if (responsePrevious.ok) {
+            const previousImageUrl = responsePrevious.url;
+            setPreviousDrugImageUrl(previousImageUrl);
+          } else {
+            setError(`Could not retrieve image for ${selectedPreviousDrugs}`);
+          }
+        } catch (error) {
+          console.error('Error fetching previous drug image:', error);
+          setError('Failed to retrieve previous drug image.');
+        }
+      }
+
+      if (selectedDrugs && selectedDrugs !== 'No selected drugs') {
+        try {
+          const responseSelected = await fetch(getDrugImageUrl(selectedDrugs)); // Fetch image from PubChem for selected drug
+          if (responseSelected.ok) {
+            const selectedImageUrl = responseSelected.url;
+            setSelectedDrugImageUrl(selectedImageUrl);
+          } else {
+            setError(`Could not retrieve image for ${selectedDrugs}`);
+          }
+        } catch (error) {
+          console.error('Error fetching selected drug image:', error);
+          setError('Failed to retrieve selected drug image.');
+        }
+      }
+    };
+
+    fetchDrugImages();
+  }, [selectedPreviousDrugs, selectedDrugs]);
 
   const handleIgnore = () => {
-    navigate('/reassessing', { state: { patientData } });
+    navigate('/patient-info', { state: { patientData } });
   };
 
   const handleDosageChange = (e) => {
-    setDosage(e.target.value); // Update dosage state when value changes
+    const value = parseInt(e.target.value, 10);
+    if (value >= 1) {
+      setDosage(value);
+      setWarning(''); // Clear warning if valid dosage is entered
+    } else {
+      setWarning('Dosage must be at least 1'); // Show warning if dosage is less than 1
+    }
   };
 
   const handleAccept = async () => {
-    const patientData = location.state?.patientData || {};
-    const selectedDrugs = location.state?.selectedDrug || 'No selected drugs'; // Get the selected drug from state
-  
+    // Check if the dosage is less than 1 and prevent proceeding
+    if (dosage < 1) {
+      setWarning('Dosage must be at least 1 to proceed.');
+      return;
+    }
+
     try {
-      // Create a reference to the specific patient's data in Firebase
       const patientRef = ref(database, `patients/${patientData.ID}`);
-  
-      // Fetch existing prescriptions from Firebase
       const existingPrescriptionsSnapshot = await get(child(patientRef, 'prescriptions'));
       const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
-  
-      // Get the current date and time
+
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
       const formattedTime = currentDate.toTimeString().split(' ')[0].slice(0, 5);
-  
-      // Create a new prescription entry with selectedDrugs and dosage
+
       const newPrescription = {
-        drug: selectedDrugs, // Add selected drug(s)
-        dosage, // Add the selected dosage (from the state)
-        date: formattedDate, // Add the current date
-        time: formattedTime, // Add the current time
+        drug: selectedDrugs,
+        dosage,
+        date: formattedDate,
+        time: formattedTime,
         previousDrug: selectedPreviousDrugs,
-        ddiCategory, // Add the DDI category from the previous state
+        ddiCategory,
       };
-  
-      // Combine the new prescription with existing ones
+
       const updatedPrescriptions = [...(existingPrescriptions || []), newPrescription];
-  
-      // Update the combined prescriptions list to Firebase
       await update(patientRef, { prescriptions: updatedPrescriptions });
-  
-      // Navigate to the patient-info page after saving
+
       navigate('/patient-info', { state: { patientData } });
     } catch (error) {
-      console.error('Error updating data:', error); // Log any errors
-      setError('Failed to update data. Please try again.'); // Set an error message
+      console.error('Error updating data:', error);
+      setError('Failed to update data. Please try again.');
     }
   };
-  
-  
 
   return (
     <div className="flex">
       {/* Sidebar */}
       <div className="w-1/6 bg-green-900 min-h-screen flex flex-col items-center py-6">
-      <div className="logo mb-12">
-        <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
-      </div>
+        <div className="logo mb-12">
+          <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+        </div>
         <nav className="flex flex-col gap-8 text-green-200">
-        <Link to="/main">
+          <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
           <Link to="/login">
@@ -84,6 +126,7 @@ const RecommendationsPage = () => {
           </Link>
         </nav>
       </div>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F8EF]">
         <div className="w-full max-w-4xl p-8">
@@ -93,10 +136,32 @@ const RecommendationsPage = () => {
 
           {/* Display selected drugs and DDI category */}
           <div className="mb-6">
-            <h2 className="text-2xl text-green-900 font-semibold">{selectedPreviousDrugs} & {selectedDrugs}: {ddiCategory}</h2>
+            <h2 className="text-2xl text-green-900 font-semibold">
+              {selectedPreviousDrugs} & {selectedDrugs}: {ddiCategory}
+            </h2>
           </div>
 
           {error && <p className="text-red-500 mb-4">{error}</p>}
+
+          {/* Display Previous and Selected Drug Images Side by Side with "+" in between */}
+          <div className="flex items-center mb-6">
+            {previousDrugImageUrl && (
+              <div className="mr-4">
+                <img src={previousDrugImageUrl} alt={`${selectedPreviousDrugs} structure`} className="w-32 h-32" />
+                <p className="text-green-900">Chemical structure of {selectedPreviousDrugs}</p>
+              </div>
+            )}
+            
+            {/* Add large plus symbol between the drug images */}
+            <div className="text-green-900 text-5xl font-bold mx-4">+</div>
+            
+            {selectedDrugImageUrl && (
+              <div>
+                <img src={selectedDrugImageUrl} alt={`${selectedDrugs} structure`} className="w-32 h-32" />
+                <p className="text-green-900">Chemical structure of {selectedDrugs}</p>
+              </div>
+            )}
+          </div>
 
           {/* Prescription Table */}
           <table className="w-full mb-6 border-collapse">
@@ -115,13 +180,16 @@ const RecommendationsPage = () => {
                     value={dosage} 
                     onChange={handleDosageChange} 
                     className="border p-1 w-20"
-                    min="0"
+                    min="1" // Set min to 1 to prevent user from entering values lower than 1
                     step="1"
                   />
                 </td>
               </tr>
             </tbody>
-          </table>        
+          </table>
+
+          {/* Warning Message */}
+          {warning && <p className="text-red-500 mb-4">{warning}</p>}
 
           {/* Accept/Ignore Buttons */}
           <div className="flex justify-end">
