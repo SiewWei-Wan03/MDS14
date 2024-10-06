@@ -68,7 +68,6 @@ const RecommendationsPage = () => {
 
   const handleIgnore = () => {
     navigate('/patient-info', { state: { patientData } });
-    navigate('/patient-info', { state: { patientData } });
   };
 
   const handleDosageChange = (e) => {
@@ -89,7 +88,7 @@ const RecommendationsPage = () => {
     }
   
     try {
-      const patientRef = ref(database, `patients/${patientData.ID}`);
+      const patientRef = ref(database, `patients/${patientData.patientID}`);
       const existingPrescriptionsSnapshot = await get(child(patientRef, 'prescriptions'));
       const existingPrescriptions = existingPrescriptionsSnapshot.val() || [];
   
@@ -114,7 +113,11 @@ const RecommendationsPage = () => {
       const updatedPrescriptions = [...(existingPrescriptions || []), newPrescription];
       await update(patientRef, { prescriptions: updatedPrescriptions });
   
-      navigate('/patient-info', { state: { patientData } });
+      const snapshot = await get(patientRef);
+      if (snapshot.exists()) {
+        const patientData = snapshot.val();
+        navigate('/patient-info', { state: { patientData } });
+      } 
     } catch (error) {
       console.error('Error updating data:', error);
       setError('Failed to update data. Please try again.');

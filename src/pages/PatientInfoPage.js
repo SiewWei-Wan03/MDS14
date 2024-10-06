@@ -7,48 +7,54 @@ import useAutoLogout from '../services/useAutoLogout'; // Import the custom hook
 import '../App.css';
 
 const PatientInfoPage = () => {
-  const [patientData, setPatientData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [patientD, setPatientData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const patientID = state?.patientData?.ID;
+  const location = useLocation();
+  // const { state } = useLocation();
+  const patientData = location.state?.patientData;
+  const patientID = location.state?.patientData.patientID;
   
 
   // Use the custom hook to handle auto logout and countdown
   const countdown = useAutoLogout(); 
+  useEffect (() => {
+    console.log("patient ID:", patientID)
+  })
 
-  // Fetch patient data
-  useEffect(() => {
-    const fetchPatientData = async () => {
-      if (patientID) {
-        try {
-          const snapshot = await get(ref(database, `patients/${patientID}`));
-          if (snapshot.exists()) {
-            setPatientData(snapshot.val());
-          } else {
-            setError('No data available for this patient.');
-          }
-        } catch (error) {
-          console.error('Error fetching patient data:', error);
-          setError('Failed to fetch patient data. Please try again.');
-        } finally {
-          setLoading(false);
-        }
-      } else {
-        setLoading(false);
-        setError('No patient ID provided.');
-      }
-    };
+  // // Fetch patient data
+  // useEffect(() => {
+  //   const fetchPatientData = async () => {
+  //     if (patientID) {
+  //       try {
+  //         const snapshot = await get(ref(database, `patients/${patientID}`));
+  //         if (snapshot.exists()) {
+  //           setPatientData(snapshot.val());
+  //         } else {
+  //           setError('No data available for this patient.');
+  //         }
+  //       } catch (error) {
+  //         console.error('Error fetching patient data:', error);
+  //         setError('Failed to fetch patient data. Please try again.');
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     } else {
+  //       setLoading(false);
+  //       setError('No patient ID provided.');
+  //       // Optionally redirect to home if patient ID is missing
+  //       setTimeout(() => navigate('/main'), 2000);
+  //     }
+  //   };
 
-    fetchPatientData();
-  }, [patientID]);
+  //   fetchPatientData();
+  // }, [patientD]);
 
   const handleAddPrescriptions = () => {
     navigate('/select-prescriptions', { state: { patientData } });
   };
 
-  if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
   if (!patientData) return <div>No patient data available</div>
 
@@ -83,16 +89,20 @@ const PatientInfoPage = () => {
                 </div>
                 <p className='font-semibold'>Date of birth: <span className='font-normal'>{patientData.DOB}</span></p>
                 <p className='font-semibold'>Age: <span className="font-normal">{patientData.age}</span></p>
-                <p className='font-semibold'>Patient ID: <span className="font-normal">{patientData.ID}</span></p>
+                <p className='font-semibold'>Patient ID: <span className="font-normal">{patientData.patientID}</span></p>
               </div>
               <div className="w-1/3 max-h-40 overflow-y-auto">
                 <h2 className="text-green-900 font-semibold mb-4">Medical Conditions:</h2>
                 <ul className="text-left">
-                  {patientData.conditions.map((condition, index) => (
-                    <li key={index} className="bg-green-100 text-green-900 rounded px-4 py-2 mb-2">
-                      {condition}
-                    </li>
-                  ))}
+                {Array.isArray(patientData?.conditions) && patientData.conditions.length > 0 ? (
+                    patientData.conditions.map((condition, index) => (
+                      <li key={index} className="bg-green-100 text-green-900 rounded px-4 py-2 mb-2">
+                        {condition}
+                      </li>
+                    ))
+                  ) : (
+                    <p>No medical conditions found</p>
+                  )}
                 </ul>
               </div>
             </div>
@@ -110,14 +120,21 @@ const PatientInfoPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {patientData.prescriptions.map((prescription, index) => (
-                    <tr key={index}>
-                      <td className="px-4 py-2 border border-green-900">{prescription.drug}</td>
-                      <td className="px-4 py-2 border border-green-900">{prescription.dosage}</td>
-                      <td className="px-4 py-2 border border-green-900">{prescription.date}</td>
-                      <td className="px-4 py-2 border border-green-900">{prescription.time}</td>
-                    </tr>
-                  ))}
+                {patientData.prescriptions && patientData.prescriptions.length > 1 ? (
+                patientData.prescriptions.slice(1).map((prescription, index) => (
+                  <tr key={index}>
+                    <td className="px-4 py-2 border border-green-900">{prescription.drug}</td>
+                    <td className="px-4 py-2 border border-green-900">{prescription.dosage}</td>
+                    <td className="px-4 py-2 border border-green-900">{prescription.date}</td>
+                    <td className="px-4 py-2 border border-green-900">{prescription.time}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="px-4 py-2 border border-green-900 text-center">No prescriptions available</td>
+                </tr>
+              )}
+
                 </tbody>
               </table>
             </div>

@@ -310,7 +310,7 @@ const SelectPrescriptionPage = () => {
 
     if ((predictedValue[0][3]) > 0.1) {
       maxIndex = 3
-    } else if ((predictedValue[0][2] > 0.145)) {
+    } else if ((predictedValue[0][2] > 0.15)) {
       maxIndex = 2
     } else if ((predictedValue[0][1]) > 0.17) {
       maxIndex = 1

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { FaCirclePlus } from "react-icons/fa6";
 import './App.css';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -11,6 +12,7 @@ import SelectPrescriptionPage from './pages/SelectPrescriptionPage';
 import { database } from './firebase';
 import { ref, get } from "firebase/database";
 import useAutoLogout from './services/useAutoLogout'; 
+import AddPatientPage from './pages/AddPatientPage';
 
 function App() {
   return (
@@ -23,6 +25,7 @@ function App() {
         <Route path="/select-prescriptions" element={<SelectPrescriptionPage />} />
         <Route path="/recommendations" element={<RecommendationsPage />} />
         <Route path="/reassessing" element={<ReassessingPage />} />
+        <Route path="/add-patient" element={<AddPatientPage />} />
         <Route path="/main" element={<MainLayout />} /> {/* MainLayout route */}
       </Routes>
     </Router>
@@ -93,6 +96,13 @@ const MainLayout = () => {
             className="input border border-green-900 rounded px-4 py-2 mb-4" 
           />
           <button className="button bg-green-900 text-white px-6 py-2 rounded" onClick={handleSearchClick}>SEARCH</button>
+        </div>
+
+        {/* Add New Patient Button */}
+        <div className="mt-12 text-center">
+          <button className="button bg-green-900 text-white px-6 py-2 rounded flex items-center gap-2" onClick={() => navigate('/add-patient')}>
+          <FaCirclePlus />ADD PATIENT
+          </button>
         </div>
 
         {/* Countdown Timer Display */}
