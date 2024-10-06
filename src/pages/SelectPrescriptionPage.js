@@ -293,22 +293,29 @@ const SelectPrescriptionPage = () => {
   
       // Make predictions with the loaded model
       const prediction = model.predict(inputTensor);
-      console.log(prediction);
       const predictedValue = await prediction.array(); // Extract the prediction result
       setPredictionResult(predictedValue); // Store the result to display
       
     // DDI mapping
     const ddi_mapping = {
       'No interaction found, can be prescribed safely.': 0,
-      'Minor interaction found': 1,
+      'Minor interaction found, be careful with the dosage when prescribe': 1,
       'Moderate interaction found, better to choose another prescription.': 2,
       'Major interaction found, should not be prescribed.': 3
     };
 
     // Find the maximum prediction value and its index
     const maxPredictionValue = Math.max(...predictedValue[0]);
-    const maxIndex = predictedValue[0].indexOf(maxPredictionValue);
+    let maxIndex = predictedValue[0].indexOf(maxPredictionValue);
 
+    if ((predictedValue[0][3]) > 0.1) {
+      maxIndex = 3
+    } else if ((predictedValue[0][2] > 0.145)) {
+      maxIndex = 2
+    } else if ((predictedValue[0][1]) > 0.17) {
+      maxIndex = 1
+    }
+      
     // Reverse the ddi_mapping to get categories by index
     const reverseDdiMapping = Object.fromEntries(
       Object.entries(ddi_mapping).map(([key, value]) => [value, key])
@@ -316,10 +323,6 @@ const SelectPrescriptionPage = () => {
 
     // Get the corresponding DDI category
     const ddiCategory = reverseDdiMapping[maxIndex];
-
-    console.log("Maximum Prediction Value:", maxPredictionValue); // Output: 0.7767283320426941
-    console.log("Index of Maximum Prediction Value:", maxIndex); // Output: 0
-    console.log("DDI Category:", ddiCategory); // Output: 'no interaction found'
   
       // Save selected prescription to Firebase
       const patientRef = ref(database, `patients/${patientData.ID}`);
@@ -327,7 +330,7 @@ const SelectPrescriptionPage = () => {
   
       await update(patientRef, { selected_prescription: updatedPrescription });
 
-      navigate('/recommendations', { state: { patientData, ddiCategory, selectedDrug, selectedPreviousDrug } });
+      navigate('/recommendations', { state: { patientData, ddiCategory, selectedDrug, selectedPreviousDrug, matchedData } });
     
     } catch (error) {
       console.error('Error saving prescription:', error);
