@@ -79,13 +79,6 @@ const RecommendationsPage = () => {
     } else {
       setWarning('Dosage must be at least 1'); // Show warning if dosage is less than 1
     }
-    const value = parseInt(e.target.value, 10);
-    if (value >= 1) {
-      setDosage(value);
-      setWarning(''); // Clear warning if valid dosage is entered
-    } else {
-      setWarning('Dosage must be at least 1'); // Show warning if dosage is less than 1
-    }
   };
 
   const handleAccept = async () => {
@@ -176,11 +169,7 @@ const RecommendationsPage = () => {
         <div className="logo mb-12">
           <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
         </div>
-        <div className="logo mb-12">
-          <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
-        </div>
         <nav className="flex flex-col gap-8 text-green-200">
-          <Link to="/main">
           <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
@@ -224,7 +213,6 @@ const RecommendationsPage = () => {
           {/* Chart Container */}
           <div className="mb-6">
             <h2 className="text-2xl text-green-900 font-semibold mb-4">Feature Comparison Chart
-              {tanimoto} {feature_jsim} {feature_dsim} {feature_osim}
             </h2>
             
             <canvas id="myChart" width="400" height="150"></canvas>
@@ -268,5 +256,4 @@ const RecommendationsPage = () => {
     </div>
   );
 };
-
 export default RecommendationsPage;
