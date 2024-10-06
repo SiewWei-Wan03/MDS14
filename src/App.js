@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt } from 'react-icons/fa';
 import './App.css';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -74,7 +74,6 @@ const MainLayout = () => {
           <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
-          <FaEnvelope className="text-2xl" />
           <Link to="/login">
             <FaSignOutAlt className="text-2xl" />
           </Link>

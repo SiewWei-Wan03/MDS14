@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaSignOutAlt, FaPlusCircle } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaPlusCircle } from 'react-icons/fa';
 import { ref, get } from 'firebase/database';
 import { database } from '../firebase';
 import useAutoLogout from '../services/useAutoLogout'; // Import the custom hook
