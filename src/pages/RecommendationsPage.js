@@ -68,9 +68,17 @@ const RecommendationsPage = () => {
 
   const handleIgnore = () => {
     navigate('/patient-info', { state: { patientData } });
+    navigate('/patient-info', { state: { patientData } });
   };
 
   const handleDosageChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    if (value >= 1) {
+      setDosage(value);
+      setWarning(''); // Clear warning if valid dosage is entered
+    } else {
+      setWarning('Dosage must be at least 1'); // Show warning if dosage is less than 1
+    }
     const value = parseInt(e.target.value, 10);
     if (value >= 1) {
       setDosage(value);
@@ -101,7 +109,12 @@ const RecommendationsPage = () => {
         dosage,
         date: formattedDate,
         time: formattedTime,
+        drug: selectedDrugs,
+        dosage,
+        date: formattedDate,
+        time: formattedTime,
         previousDrug: selectedPreviousDrugs,
+        ddiCategory,
         ddiCategory,
       };
   
@@ -163,7 +176,11 @@ const RecommendationsPage = () => {
         <div className="logo mb-12">
           <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
         </div>
+        <div className="logo mb-12">
+          <img src="/doctor_img.png" alt="Profile picture" className="w-12 h-12" /> 
+        </div>
         <nav className="flex flex-col gap-8 text-green-200">
+          <Link to="/main">
           <Link to="/main">
             <FaUser className="text-2xl" />
           </Link>
@@ -230,7 +247,7 @@ const RecommendationsPage = () => {
                     value={dosage} 
                     onChange={handleDosageChange} 
                     className="border p-1 w-20"
-                    min="0"
+                    min="1" // Set min to 1 to prevent user from entering values lower than 1
                     step="1"
                   />
                 </td>
