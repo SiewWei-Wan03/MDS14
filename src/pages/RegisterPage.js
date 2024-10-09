@@ -58,7 +58,7 @@ const RegisterPage = () => {
 
     } catch (error) {
       console.error('Registration failed:', error);
-      setError('An unexpected error occurred. Please try again.');
+      setError('Password should be at least 6 characters. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ const RegisterPage = () => {
           type="text" 
           value={doctorID} 
           onChange={(e) => setDoctorID(e.target.value)} 
-          placeholder="Doctor ID (e.g. D012345)" 
+          placeholder="Doctor ID (e.g. D00000)" 
           className="border border-[#234f32] rounded px-4 py-2 mb-4 w-full focus:outline-none focus:ring-2 focus:ring-[#234f32]"
         />
         <input 
