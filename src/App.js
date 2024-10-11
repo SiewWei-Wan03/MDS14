@@ -75,10 +75,10 @@ const MainLayout = () => {
       </div>
         <nav className="nav-icons flex flex-col gap-8 text-green-200">
           <Link to="/main">
-            <FaUser className="text-2xl" />
+            <FaUser className="text-2xl" title="Main Page"/>
           </Link>
           <Link to="/login">
-            <FaSignOutAlt className="text-2xl" />
+            <FaSignOutAlt className="text-2xl" title='Log Out'/>
           </Link>
         </nav>
       </div>

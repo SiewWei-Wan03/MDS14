@@ -6,6 +6,11 @@ import { database } from '../firebase'; // Import Firebase instance
 import '../App.css';
 import useAutoLogout from '../services/useAutoLogout';
 
+// no longer in use
+
+
+
+
 const ReassessingPage = () => {
   const [drugs, setDrugs] = useState([]);
   const [advice, setAdvice] = useState([]); // Initialize as an array

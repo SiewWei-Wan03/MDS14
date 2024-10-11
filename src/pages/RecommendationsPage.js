@@ -101,12 +101,6 @@ const RecommendationsPage = () => {
         dosage,
         date: formattedDate,
         time: formattedTime,
-        drug: selectedDrugs,
-        dosage,
-        date: formattedDate,
-        time: formattedTime,
-        previousDrug: selectedPreviousDrugs,
-        ddiCategory,
         ddiCategory,
       };
   
