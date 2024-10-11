@@ -35,6 +35,7 @@ function App() {
 const MainLayout = () => {
   const [patientID, setPatientID] = useState('');
   const navigate = useNavigate();
+  const [error, setError] = useState('')
 
   // Use the custom hook to handle auto logout and get the countdown timer
   const countdown = useAutoLogout(); 
@@ -53,7 +54,7 @@ const MainLayout = () => {
         const patientData = snapshot.val();
         navigate('/patient-info', { state: { patientData } });
       } else {
-        alert("Patient does not exist");
+        setError("Patient does not exist, please check the Patient ID again.");
       }
     } catch (error) {
       console.error("Error fetching patient data: ", error);
@@ -86,6 +87,7 @@ const MainLayout = () => {
       <div className="main-content flex-1 flex flex-col items-center justify-center bg-[#F4F8EF] relative">
         <div className="text-center">
           <h1 className="heading text-2xl text-green-900 font-semibold mb-4">Please enter the patient ID:</h1>
+          {error && <p className="text-red-500 mb-4 text-center">{error}</p>}
           <label className="label text-sm text-green-800 mb-2 block" htmlFor="patient-id">Patient ID (e.g. PA12345)</label>
           <input 
             id="patient-id" 

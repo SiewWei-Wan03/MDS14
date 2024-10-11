@@ -114,6 +114,27 @@ const AddPatientPage = () => {
     }
   };
 
+  const calculateAge = (dob) => {
+    if (!dob) return '';
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    // Adjust age if the birthday hasn't occurred yet this year
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    return age;
+  };
+
+  const handleDOBChange = (e) => {
+    const dobValue = e.target.value;
+    setDOB(dobValue);
+    setAge(calculateAge(dobValue));  // Automatically calculate and set age
+  };
+
   // Handle removing a condition
   const removeCondition = (conditionToRemove) => {
     setSelectedConditions(selectedConditions.filter((condition) => condition !== conditionToRemove));
@@ -140,7 +161,7 @@ const AddPatientPage = () => {
     const sanitizedPatientName = sanitizeInput(patientName);
 
     // Ensure all fields except age are filled
-    if (!sanitizedPatientID.trim() || !sanitizedPatientName.trim() || !dob.trim() || !age.trim()) {
+    if (!sanitizedPatientID.trim() || !sanitizedPatientName.trim() || !dob.trim() || !age.toString().trim()) {
       setError('Please fill out all required fields.');
       return;
     }
@@ -232,29 +253,27 @@ const AddPatientPage = () => {
           />
         </div>
 
-        {/* Patient DOB Input */}
-        <div className="mb-4 w-80">
-          <label className="text-sm text-green-800 block mb-2">Date of Birth</label>
-          <input
-            type="date"
-            value={dob}
-            onChange={(e) => setDOB(e.target.value)}
-            className="border border-green-900 rounded px-4 py-2 w-full"
-          />
-        </div>
+      {/* Patient DOB Input */}
+      <div className="mb-4 w-80">
+        <label className="text-sm text-green-800 block mb-2">Date of Birth</label>
+        <input
+          type="date"
+          value={dob}
+          onChange={handleDOBChange} // Trigger DOB change handler
+          className="border border-green-900 rounded px-4 py-2 w-full"
+        />
+      </div>
 
-        {/* Patient Age Input */}
-        <div className="mb-4 w-80">
-          <label className="text-sm text-green-800 block mb-2">Age</label>
-          <input
-            type="number"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            placeholder="Enter Age" // Added placeholder for age
-            min="1" // Ensure the minimum age is 1
-            className="border border-green-900 rounded px-4 py-2 w-full"
-          />
-        </div>
+      {/* Patient Age Input */}
+      <div className="mb-4 w-80">
+        <label className="text-sm text-green-800 block mb-2">Age</label>
+        <input
+          type="number"
+          value={age} // Age is automatically calculated and set
+          readOnly // Make the input read-only since it's auto-calculated
+          className="border border-green-900 rounded px-4 py-2 w-full"
+        />
+      </div>
 
         {/* Medical Conditions Dropdown */}
         <div className="mb-4 w-80">
