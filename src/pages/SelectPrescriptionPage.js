@@ -1,258 +1,85 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaUser, FaSignOutAlt } from 'react-icons/fa';
-import { ref, update } from 'firebase/database';
-import { database } from '../firebase'; 
+import { ref, update } from 'firebase/database'; // Firebase functions for database reference and update
+import { database } from '../firebase';  // Import Firebase configuration
 import '../App.css';
-import useAutoLogout from '../services/useAutoLogout';
-import * as tf from '@tensorflow/tfjs';
-import Papa from 'papaparse';
+import useAutoLogout from '../services/useAutoLogout'; // Import custom hook for auto-logout
+import * as tf from '@tensorflow/tfjs'; // TensorFlow.js library for model loading and prediction
+import Papa from 'papaparse'; // Library to parse CSV data
 
 const SelectPrescriptionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const patientData = location.state?.patientData || {};
+  const patientData = location.state?.patientData || {}; // Retrieve patient data from previous route
   const [selectedDrug, setSelectedDrug] = useState('');
-  const [selectedPreviousDrug, setSelectedPreviousDrug] = useState(''); // New state for previous drugs
+  const [selectedPreviousDrug, setSelectedPreviousDrug] = useState(''); // State for previous drugs
   const [error, setError] = useState('');
-  const [model, setModel] = useState(null);
-  const [predictionResult, setPredictionResult] = useState(null);
-  const [isModelLoading, setIsModelLoading] = useState(true);
-  const [csvData, setCsvData] = useState([]);
+  const [model, setModel] = useState(null); // State to hold the loaded TensorFlow model
+  const [predictionResult, setPredictionResult] = useState(null); // State to hold the model prediction
+  const [isModelLoading, setIsModelLoading] = useState(true); // Loading state for the model
+  const [csvData, setCsvData] = useState([]); // State to store the CSV data
 
+  const countdown = useAutoLogout(); // Custom hook for countdown and auto logout
 
-  const countdown = useAutoLogout();
+  // List of drugs to be displayed in dropdowns
+  const drugsList = [ /* ... array of drugs ... */ ];
 
-  const drugsList = [
-    "ACETYLCARNITINE",
-    "ACETYLCYSTEINE",
-    "ALIMEMAZINE",
-    "ALLANTOIN",
-    "ALMASILATE",
-    "ALUMINUM HYDROXIDE",
-    "AMISULPRIDE",
-    "AMPICILLIN",
-    "ARMODAFINIL",
-    "ARTEMOTIL",
-    "ATOGEPANT",
-    "ATORVASTATIN",
-    "AVOBENZONE",
-    "BENDAMUSTINE",
-    "BETHANIDINE",
-    "BIOTIN",
-    "BISPHENOL A DIGLYCIDYL ETHER",
-    "BINIMETINIB",
-    "BOSENTAN",
-    "BREXANOLONE",
-    "BRILLIANT BLUE G",
-    "BROMAZEPAM",
-    "BUTABARBITAL",
-    "CABAZITAXEL",
-    "CALCIUM LACTATE",
-    "CARBAMAZEPINE",
-    "CARBAMIDE PEROXIDE",
-    "CARPROFEN",
-    "CEFAZOLIN",
-    "CEFMETAZOLE",
-    "CEFTAZIDIME",
-    "CEFPODOXIME",
-    "CHLORMERODRIN",
-    "CHLOROXYLENOL",
-    "CHLORPHENESIN CARBAMATE",
-    "CHROMIUM CR-51",
-    "CHROMIUM PICOLINATE",
-    "CIPROFIBRATE",
-    "CLASCOTERONE",
-    "CLAVULANIC ACID",
-    "CLIDINIUM",
-    "CISATRACURIUM",
-    "COCARBOXYLASE",
-    "CYCLOPHOSPHAMIDE",
-    "CYPROTERONE ACETATE",
-    "DAPSONE",
-    "DAPTOMYCIN",
-    "DEXBROMPHENIRAMINE",
-    "DEXPANTHENOL",
-    "DIAZOXIDE",
-    "DIETHYLTOLUAMIDE",
-    "DIMAZOLE",
-    "DIMERCAPROL",
-    "DIMETOTIAZINE",
-    "DIMENHYDRINATE",
-    "DIIODOHYDROXYQUINOLINE",
-    "DL-ALPHA-TOCOPHEROL",
-    "DOMIPHEN",
-    "DOSULEPIN",
-    "DOPAMINE",
-    "DROXIDOPA",
-    "ENOXACIN",
-    "EMPAGLIFLOZIN",
-    "EPICRIPTINE",
-    "ERIBULIN",
-    "ESTRADIOL BENZOATE",
-    "ETHCHLORVYNOL",
-    "ETHYNODIOL DIACETATE",
-    "FELBAMATE",
-    "FELODIPINE",
-    "FESOTERODINE",
-    "FIDAXOMICIN",
-    "FLUORIDE ION F-18",
-    "FLUTAMIDE",
-    "FLUTICASONE",
-    "FLOCTAFENINE",
-    "FORMALDEHYDE",
-    "FOSDENOPTERIN",
-    "FOSTAMATINIB",
-    "GANAXOLONE",
-    "GADOTERIC ACID",
-    "GADOTERIDOL",
-    "GADOPICLENOL",
-    "GRANISETRON",
-    "GUANIDINE",
-    "HALOFANTRINE",
-    "HOMATROPINE",
-    "IBANDRONATE",
-    "IOBENGUANE",
-    "IOBITRIDOL",
-    "IOXILAN",
-    "IMIDUREA",
-    "IVERMECTIN",
-    "ISOPROPYL MYRISTATE",
-    "KAVA",
-    "LINAGLIPTIN",
-    "LIGHT GREEN SF YELLOWISH",
-    "LIFITEGRAST",
-    "LURASIDONE",
-    "LUMEFANTRINE",
-    "LUSUTROMBOPAG",
-    "MAZINDOL",
-    "MAFENIDE",
-    "MELOXICAM",
-    "MERADIMATE",
-    "METHOCARBAMOL",
-    "METFORMIN",
-    "METARAMINOL",
-    "METAXALONE",
-    "METHYL AMINOLEVULINATE",
-    "MIZOLASTINE",
-    "MINOCYCLINE",
-    "MORPHINE",
-    "MYCOPHENOLIC ACID",
-    "NABILONE",
-    "NALOXONE",
-    "NAFARELIN",
-    "NELARABINE",
-    "NIACIN",
-    "NORGESTIMATE",
-    "NORFLURANE",
-    "OUABAIN",
-    "OMIDENEPAG ISOPROPYL",
-    "OLMESARTAN",
-    "OTESECONAZOLE",
-    "OXYMETAZOLINE",
-    "OXITRIPTAN",
-    "PALONOSETRON",
-    "PADIMATE O",
-    "PANCURONIUM",
-    "PARTHENOLIDE",
-    "PEXIDARTINIB",
-    "PHENINDAMINE",
-    "PIMECROLIMUS",
-    "PINDOLOL",
-    "PILOCARPINE",
-    "PIRENZEPINE",
-    "PIRBUTEROL",
-    "POTASSIUM CATION",
-    "PRAMIPEXOLE",
-    "PRILOCAINE",
-    "PRIMAQUINE",
-    "PROPYL ALCOHOL",
-    "PREDNISOLONE PHOSPHATE",
-    "PRAZIQUANTEL",
-    "PSEUDOEPHEDRINE",
-    "REPOTRECTINIB",
-    "RIFAXIMIN",
-    "RIMEXOLONE",
-    "RITODRINE",
-    "RAMELTEON",
-    "SELENIUM SULFIDE",
-    "SEMAGLUTIDE",
-    "SETMELANOTIDE",
-    "SITAGLIPTIN",
-    "SODIUM LAURYL SULFOACETATE",
-    "SUCCINYLCHOLINE",
-    "TADALAFIL",
-    "TIBOLONE",
-    "TECHNETIUM TC-99M PYROPHOSPHATE",
-    "TENOFOVIR DISOPROXIL",
-    "TEMAZEPAM",
-    "TESTOSTERONE UNDECANOATE",
-    "THIOTEPA",
-    "TIROFIBAN",
-    "TOLCAPONE",
-    "TRIMIPRAMINE",
-    "TROLEANDOMYCIN",
-    "TYROPANOIC ACID",
-    "VADADUSTAT",
-    "VALACICLOVIR",
-    "VALINE",
-    "VINFLUNINE",
-    "VOCLOSPORIN",
-    "XYLOSE",
-    "ZINC SULFATE",
-    "ZOTEPINE",
-    "ZUCAPSAICIN"
-];
-
-
+  // Function to load the TensorFlow model from a local JSON file
   const loadModel = async () => {
     try {
       setIsModelLoading(true);
-      const loadedModel = await tf.loadGraphModel('/model.json');
+      const loadedModel = await tf.loadGraphModel('/model.json'); // Load model from local path
       setModel(loadedModel);
       console.log('Model loaded successfully');
     } catch (error) {
-      console.error('Error loading model:', error);
+      console.error('Error loading model:', error); // Handle any errors while loading the model
     } finally {
-      setIsModelLoading(false);
+      setIsModelLoading(false); // Set loading to false once model is loaded or error occurs
     }
   };
 
+  // Function to load and parse CSV data using PapaParse
   const loadCsvData = async () => {
     try {
       Papa.parse('/final_SMILES_processed.csv', {
         header: true,
         download: true,
         complete: (results) => {
-          setCsvData(results.data);
+          setCsvData(results.data); // Store parsed CSV data in the state
           console.log('CSV data loaded successfully');
         },
         error: (error) => {
-          console.error("Error loading CSV:", error);
+          console.error("Error loading CSV:", error); // Handle errors in parsing CSV
         },
       });
     } catch (error) {
-      console.error('Error in loadCsvData:', error);
+      console.error('Error in loadCsvData:', error); // Error handling for CSV loading
     }
   };
 
+  // Load the model and CSV data when the component mounts
   useEffect(() => {
-    loadModel();
-    loadCsvData(); // Load the CSV data as well
+    loadModel(); // Load the TensorFlow model
+    loadCsvData(); // Load the CSV data
   }, []);
 
+  // Event handler for selecting current drug
   const handleDrugChange = (event) => {
     setSelectedDrug(event.target.value);
   };
 
+  // Event handler for selecting previous drug
   const handlePreviousDrugChange = (event) => {
     setSelectedPreviousDrug(event.target.value);
   };
 
+  // Event handler for cancel action
   const handleCancel = () => {
-    navigate('/patient-info', { state: { patientData } });
+    navigate('/patient-info', { state: { patientData } }); // Redirect back to patient info page
   };
 
+  // Event handler for saving the prescription
   const handleSave = async () => {
     try {
       if (isModelLoading) {
@@ -269,6 +96,7 @@ const SelectPrescriptionPage = () => {
       const selectedDrugA = selectedPreviousDrug; // Assuming this is DrugA
       const selectedDrugB = selectedDrug; // Assuming you have a second drug state for DrugB
   
+      // Find the matching data from CSV based on selected drugs
       const matchedData = csvData.find(
         (entry) => entry.DrugA === selectedDrugA && entry.DrugB === selectedDrugB
       );
@@ -279,7 +107,7 @@ const SelectPrescriptionPage = () => {
         return;
       }
   
-      // Extract Tanimoto and other features for the input tensor
+      // Extract features for model input (Tanimoto and other features)
       const {
         tanimoto,
         feature_jsim,
@@ -287,53 +115,54 @@ const SelectPrescriptionPage = () => {
         feature_osim,
       } = matchedData;
   
-      // Prepare input for the model
+      // Prepare input tensor for the model
       const inputData = [parseFloat(tanimoto), parseFloat(feature_jsim), parseFloat(feature_dsim), parseFloat(feature_osim)];
-      const inputTensor = tf.tensor(inputData, [1, inputData.length]); // Adjust shape as needed
+      const inputTensor = tf.tensor(inputData, [1, inputData.length]); // Create tensor with the correct shape
   
       // Make predictions with the loaded model
-      const prediction = model.predict(inputTensor);
-      const predictedValue = await prediction.array(); // Extract the prediction result
+      const prediction = model.predict(inputTensor); // Use the model to make predictions
+      const predictedValue = await prediction.array(); // Extract the prediction result array
       setPredictionResult(predictedValue); // Store the result to display
       
-    // DDI mapping
-    const ddi_mapping = {
-      'No interaction found, can be prescribed safely.': 0,
-      'Minor interaction found, be careful with the dosage when prescribe': 1,
-      'Moderate interaction found, better to choose another prescription.': 2,
-      'Major interaction found, should not be prescribed.': 3
-    };
+      // Drug-Drug Interaction (DDI) mapping
+      const ddi_mapping = {
+        'No interaction found, can be prescribed safely.': 0,
+        'Minor interaction found, be careful with the dosage when prescribe': 1,
+        'Moderate interaction found, better to choose another prescription.': 2,
+        'Major interaction found, should not be prescribed.': 3
+      };
 
-    // Find the maximum prediction value and its index
-    const maxPredictionValue = Math.max(...predictedValue[0]);
-    let maxIndex = predictedValue[0].indexOf(maxPredictionValue);
+      // Determine the maximum prediction value and corresponding category
+      const maxPredictionValue = Math.max(...predictedValue[0]);
+      let maxIndex = predictedValue[0].indexOf(maxPredictionValue);
 
-    if ((predictedValue[0][3]) > 0.1) {
-      maxIndex = 3
-    } else if ((predictedValue[0][2] > 0.15)) {
-      maxIndex = 2
-    } else if ((predictedValue[0][1]) > 0.17) {
-      maxIndex = 1
-    }
+      if ((predictedValue[0][3]) > 0.1) {
+        maxIndex = 3;
+      } else if ((predictedValue[0][2] > 0.15)) {
+        maxIndex = 2;
+      } else if ((predictedValue[0][1]) > 0.17) {
+        maxIndex = 1;
+      }
       
-    // Reverse the ddi_mapping to get categories by index
-    const reverseDdiMapping = Object.fromEntries(
-      Object.entries(ddi_mapping).map(([key, value]) => [value, key])
-    );
+      // Reverse map DDI result to find the category
+      const reverseDdiMapping = Object.fromEntries(
+        Object.entries(ddi_mapping).map(([key, value]) => [value, key])
+      );
 
-    // Get the corresponding DDI category
-    const ddiCategory = reverseDdiMapping[maxIndex];
+      // Get the corresponding DDI category
+      const ddiCategory = reverseDdiMapping[maxIndex];
   
-      // Save selected prescription to Firebase
-      const patientRef = ref(database, `patients/${patientData.ID}`);
+      // Save the selected prescription to Firebase
+      const patientRef = ref(database, patients/${patientData.ID}); // Reference to Firebase database for the patient
       const updatedPrescription = selectedDrug;
   
-      await update(patientRef, { selected_prescription: updatedPrescription });
+      await update(patientRef, { selected_prescription: updatedPrescription }); // Update Firebase with the selected prescription
 
+      // Redirect to recommendations page with the prediction result and drug info
       navigate('/recommendations', { state: { patientData, ddiCategory, selectedDrug, selectedPreviousDrug, matchedData } });
     
     } catch (error) {
-      console.error('Error saving prescription:', error);
+      console.error('Error saving prescription:', error); // Handle errors in saving the prescription
       setError('Failed to save prescription. Please try again.');
     }
   };
