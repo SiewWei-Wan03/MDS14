@@ -1,0 +1,507 @@
+{
+  "doctors": {
+    "0XTmeOomSSSx3mIHFGiaDS8didq2": {
+      "createdAt": "2024-10-11T03:11:17.308Z",
+      "doctorID": "D01234"
+    },
+    "0aaxFRpEeEWsvJOvxjN6gJoS5fI3": {
+      "createdAt": "2024-10-06T13:47:18.733Z",
+      "doctorID": "D12348"
+    },
+    "3C1wL8Ml5eaAokF2cMrE5xdJ8Vx2": {
+      "createdAt": "2024-09-05T10:33:36.934Z",
+      "doctorID": "D01010"
+    },
+    "8tvN1EuNN7RrEGl1hjJdFV5x39v2": {
+      "createdAt": "2024-10-11T03:29:00.163Z",
+      "doctorID": "D55555"
+    },
+    "ABWrSTYIgYfc8JyvbGOalnuaWms2": {
+      "createdAt": "2024-10-16T01:58:34.087Z",
+      "doctorID": "D02020"
+    },
+    "IOIExLiU2bgFFw1HIZrqydTa1hk1": {
+      "createdAt": "2024-10-01T01:24:06.316Z",
+      "doctorID": "D56789"
+    },
+    "LpmGpMoYPlVX7ovQSPoI4CeTcAh2": {
+      "createdAt": "2024-10-14T16:27:54.462Z",
+      "doctorID": "D78910"
+    },
+    "Lq5hJPtC7WcJ2H3uIrQXg3cNmnG3": {
+      "createdAt": "2024-10-10T09:02:59.683Z",
+      "doctorID": "D26508"
+    },
+    "MGpM1DO5WSeoP4V7Md4bActkFCa2": {
+      "createdAt": "2024-10-15T04:38:28.181Z",
+      "doctorID": "D15103"
+    },
+    "OEiA6wJZWfWHU5HmToxco5IIEVi2": {
+      "createdAt": "2024-10-10T14:48:24.571Z",
+      "doctorID": "D00000"
+    },
+    "PsPPqc6AUFbmYuu25dQzVML66sw2": {
+      "createdAt": "2024-10-10T09:04:17.992Z",
+      "doctorID": "D08080"
+    },
+    "db2KaawUu3fVG7pix0nEebCTNwT2": {
+      "createdAt": "2024-10-09T06:27:07.555Z",
+      "doctorID": "D12324"
+    },
+    "eKGyMtffQFfnxlaMu8cNXzVRi3w2": {
+      "createdAt": "2024-10-06T13:51:16.694Z",
+      "doctorID": "D12459"
+    },
+    "k413dftERCW5qosneQRGLJwvVz32": {
+      "createdAt": "2024-10-11T08:21:50.487Z",
+      "doctorID": "D45792"
+    },
+    "kHeWTE0A5HNuD09FnTOpujAnAYs1": {
+      "createdAt": "2024-10-16T02:34:39.367Z",
+      "doctorID": "D03030"
+    },
+    "nFpPGNPOqIb3FblPikRTsrEuSch2": {
+      "createdAt": "2024-10-10T15:23:44.672Z",
+      "doctorID": "D09090"
+    },
+    "qW0EpVKOPIeKlAt3nccJu1s7Yj02": {
+      "createdAt": "2024-10-06T13:02:46.118Z",
+      "doctorID": "D12347"
+    },
+    "tYWwJ7Ro9Sa9CLcdBy1qxK8iUdj1": {
+      "createdAt": "2024-09-04T04:47:10.745Z",
+      "doctorID": "D12346"
+    },
+    "zLgx3qNdXWVvyoZ2l0Gq4Ucqcyq2": {
+      "createdAt": "2024-09-05T09:18:20.692Z",
+      "doctorID": "D12345",
+      "password": "$2a$10$6S/jSbwiD7cEVyLgoi5OlugAZB5BQJ9Af.VtR12.9qzUcQP0MBcQa"
+    }
+  },
+  "patients": {
+    "PA00000": {
+      "DOB": "2003-12-13",
+      "age": "21",
+      "conditions": [
+        "Asthma",
+        "Dementia",
+        "Liver cancer",
+        "Obesity",
+        "Rheumatoid arthritis",
+        "Polycystic ovary syndrome (PCOS)",
+        "Ovarian cancer",
+        "Pancreatic cancer",
+        "Psoriasis",
+        "Prostate cancer",
+        "Thyroid cancer",
+        "Brain cancer",
+        "Bone cancer",
+        "Bladder cancer",
+        "Breast cancer"
+      ],
+      "name": "xiaoming",
+      "patientID": "PA00000",
+      "prescriptions": [
+        "dummy",
+        {
+          "date": "2024-10-10",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 1,
+          "drug": "LUMEFANTRINE",
+          "previousDrug": "CALCIUM LACTATE",
+          "time": "23:00"
+        },
+        {
+          "date": "2024-10-10",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 1,
+          "drug": "ACETYLCARNITINE",
+          "previousDrug": "TIROFIBAN",
+          "time": "23:00"
+        }
+      ]
+    },
+    "PA00001": {
+      "DOB": "2007-12-02",
+      "age": "17",
+      "conditions": [
+        "Bone cancer",
+        "Depression"
+      ],
+      "name": "Denise Li",
+      "patientID": "PA00001",
+      "prescriptions": [
+        "dummy",
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "Moderate interaction found, better to choose another prescription.",
+          "dosage": 3,
+          "drug": "CEFPODOXIME",
+          "previousDrug": "ATORVASTATIN",
+          "time": "22:43"
+        },
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 3,
+          "drug": "CEFAZOLIN",
+          "previousDrug": "AVOBENZONE",
+          "time": "22:49"
+        },
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 1,
+          "drug": "ENOXACIN",
+          "previousDrug": "BENDAMUSTINE",
+          "time": "23:02"
+        },
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 5,
+          "drug": "BIOTIN",
+          "previousDrug": "AVOBENZONE",
+          "time": "00:19"
+        },
+        {
+          "date": "2024-10-07",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 2,
+          "drug": "MERADIMATE",
+          "previousDrug": "ARTEMOTIL",
+          "time": "20:13"
+        },
+        {
+          "date": "2024-10-09",
+          "ddiCategory": "Moderate interaction found, better to choose another prescription.",
+          "dosage": 1,
+          "drug": "BOSENTAN",
+          "previousDrug": "BETHANIDINE",
+          "time": "00:54"
+        },
+        {
+          "date": "2024-10-09",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 6,
+          "drug": "BISPHENOL A DIGLYCIDYL ETHER",
+          "previousDrug": "BIOTIN",
+          "time": "01:26"
+        },
+        {
+          "date": "2024-10-10",
+          "ddiCategory": "Moderate interaction found, better to choose another prescription.",
+          "dosage": 5,
+          "drug": "AMPICILLIN",
+          "previousDrug": "BETHANIDINE",
+          "time": "17:12"
+        },
+        {
+          "date": "2024-10-10",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 11000,
+          "drug": "BETHANIDINE",
+          "previousDrug": "HALOFANTRINE",
+          "time": "01:26"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 7,
+          "drug": "ARTEMOTIL",
+          "time": "13:51"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 3,
+          "drug": "BINIMETINIB",
+          "time": "16:33"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 65,
+          "drug": "BINIMETINIB",
+          "time": "16:36"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "Moderate interaction found, better to choose another prescription.",
+          "dosage": 1,
+          "drug": "BIOTIN",
+          "time": "16:37"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 2,
+          "drug": "BISPHENOL A DIGLYCIDYL ETHER",
+          "time": "16:42"
+        },
+        {
+          "date": "2024-10-11",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 3,
+          "drug": "BENDAMUSTINE",
+          "time": "16:44"
+        },
+        {
+          "date": "2024-10-14",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 1,
+          "drug": "ATOGEPANT",
+          "time": "00:38"
+        },
+        {
+          "date": "2024-10-15",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 8,
+          "drug": "ATOGEPANT",
+          "time": "12:42"
+        },
+        {
+          "date": "2024-10-16",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 8,
+          "drug": "ATORVASTATIN",
+          "time": "10:38"
+        },
+        {
+          "date": "2024-10-27",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 3,
+          "drug": "BINIMETINIB",
+          "time": "18:16"
+        },
+        {
+          "date": "2024-10-27",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 1,
+          "drug": "RIMEXOLONE",
+          "time": "18:37"
+        }
+      ]
+    },
+    "PA00002": {
+      "DOB": "2000-01-12",
+      "age": "24",
+      "conditions": [
+        "Pancreatic cancer"
+      ],
+      "name": "Shelly",
+      "patientID": "PA00002",
+      "prescriptions": [
+        "dummy",
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "Minor interaction found, be careful with the dosage when prescribe",
+          "dosage": 1,
+          "drug": "CEFTAZIDIME",
+          "previousDrug": "AMPICILLIN",
+          "time": "22:55"
+        },
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 1,
+          "drug": "BINIMETINIB",
+          "previousDrug": "BENDAMUSTINE",
+          "time": "22:58"
+        },
+        {
+          "date": "2024-10-06",
+          "ddiCategory": "Major interaction found, should not be prescribed.",
+          "dosage": 1,
+          "drug": "BINIMETINIB",
+          "previousDrug": "ATOGEPANT",
+          "time": "22:59"
+        },
+        {
+          "date": "2024-10-09",
+          "ddiCategory": "No interaction found, can be prescribed safely.",
+          "dosage": 3,
+          "drug": "DAPTOMYCIN",
+          "previousDrug": "AMPICILLIN",
+          "time": "14:38"
+        }
+      ]
+    },
+    "PA00003": {
+      "DOB": "2005-07-18",
+      "age": "19",
+      "conditions": [
+        "Bladder cancer",
+        "Cardiovascular disease"
+      ],
+      "name": "Alan ",
+      "patientID": "PA00003",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA00004": {
+      "DOB": "2012-12-12",
+      "age": "12",
+      "conditions": [
+        "Tuberculosis"
+      ],
+      "name": "WER",
+      "patientID": "PA00004",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA00005": {
+      "DOB": "2005-06-09",
+      "age": "19",
+      "conditions": [
+        "Depression",
+        "Lung cancer"
+      ],
+      "name": "AlanBearing",
+      "patientID": "PA00005",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA00012": {
+      "DOB": "2012-12-15",
+      "age": "0",
+      "conditions": [
+        "Tuberculosis"
+      ],
+      "name": "FFG",
+      "patientID": "PA00012",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA03030": {
+      "DOB": "2020-07-08",
+      "age": 4,
+      "conditions": [
+        "Anxiety disorders"
+      ],
+      "name": "Ethan",
+      "patientID": "PA03030",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA08080": {
+      "DOB": "2021-02-10",
+      "age": "3",
+      "conditions": [
+        "Crohn's disease",
+        "Cardiovascular disease"
+      ],
+      "name": "LeeSunSun",
+      "patientID": "PA08080",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA08081": {
+      "DOB": "2018-11-30",
+      "age": 5,
+      "conditions": [
+        "Chronic pain"
+      ],
+      "name": "Ethan",
+      "patientID": "PA08081",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA11111": {
+      "DOB": "1996-05-14",
+      "age": 28,
+      "conditions": [
+        "Asthma"
+      ],
+      "name": "Tester1",
+      "patientID": "PA11111",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA14322": {
+      "DOB": "2024-10-03",
+      "age": "12",
+      "conditions": [
+        "Allergy to local anesthetics"
+      ],
+      "name": "1234",
+      "patientID": "PA14322",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA15103": {
+      "DOB": "2020-06-11",
+      "age": 4,
+      "conditions": [
+        "Dementia"
+      ],
+      "name": "EsteeSia",
+      "patientID": "PA15103",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA45672": {
+      "DOB": "1999-04-03",
+      "age": 25,
+      "conditions": [
+        "Chronic obstructive pulmonary disease (COPD)",
+        "Multiple sclerosis",
+        "Thyroid disease",
+        "Depression"
+      ],
+      "name": "XXX",
+      "patientID": "PA45672",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA67892": {
+      "DOB": "2003-04-13",
+      "age": 21,
+      "conditions": [
+        "Breast cancer",
+        "Crohn's disease",
+        "Hyperthyroidism"
+      ],
+      "name": "DeclanFan",
+      "patientID": "PA67892",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA78910": {
+      "DOB": "2003-04-26",
+      "age": 21,
+      "name": "Ethan",
+      "patientID": "PA78910",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "PA99999": {
+      "DOB": "1985-11-28",
+      "age": 38,
+      "conditions": [
+        "Bone cancer"
+      ],
+      "name": "TestInsertion",
+      "patientID": "PA99999",
+      "prescriptions": [
+        "dummy"
+      ]
+    },
+    "undefined": {
+      "selected_prescription": "RIMEXOLONE"
+    }
+  }
+}
